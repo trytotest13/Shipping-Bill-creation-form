@@ -1310,7 +1310,7 @@ function BillEditor({ bill }: { bill?: SavedBill }) {
                 'relative flex flex-col justify-between rounded-xl border p-3.5 transition-all',
                 isShippingBill
                   ? 'border-primary-600 bg-primary-50 ring-primary-600/30 dark:border-primary-500 dark:bg-primary-950/40 shadow-xs ring-1'
-                  : 'border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900/40'
+                  : 'border-gray-200 bg-gray-50'
               )}>
               <div className="flex items-center gap-2.5">
                 <span
@@ -1318,14 +1318,14 @@ function BillEditor({ bill }: { bill?: SavedBill }) {
                     'flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold',
                     isShippingBill
                       ? 'bg-primary-600 text-white shadow-xs'
-                      : 'border border-gray-300 bg-gray-100 text-gray-950 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100'
+                      : 'border border-gray-300 bg-gray-100 text-gray-950'
                   )}>
                   {index + 1}
                 </span>
                 <span
                   className={clsx(
                     'text-sm font-bold tracking-tight',
-                    isShippingBill ? 'text-primary-950 dark:text-primary-100' : 'text-gray-950 dark:text-gray-100'
+                    isShippingBill ? 'text-primary-950 dark:text-primary-100' : 'text-gray-950'
                   )}>
                   {step.title}
                 </span>
@@ -1333,7 +1333,7 @@ function BillEditor({ bill }: { bill?: SavedBill }) {
               <p
                 className={clsx(
                   'mt-1.5 ml-8.5 text-xs font-semibold',
-                  isShippingBill ? 'text-primary-800 dark:text-primary-300' : 'text-gray-700 dark:text-gray-300'
+                  isShippingBill ? 'text-primary-800 dark:text-primary-200' : 'text-gray-800'
                 )}>
                 {step.description}
               </p>
@@ -1343,20 +1343,20 @@ function BillEditor({ bill }: { bill?: SavedBill }) {
       </div>
       <Form ctx={formCtx} handleSubmit={handleSave} className="space-y-6">
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(String(value))}>
-          <TabsList className="flex w-full justify-start gap-1 overflow-x-auto rounded-xl border border-gray-300 bg-gray-100 p-1.5 dark:border-gray-800 dark:bg-gray-900/60">
+          <TabsList className="flex w-full justify-start gap-1 overflow-x-auto rounded-xl border border-gray-200 bg-gray-50 p-1.5">
             <TabsTrigger
               value="details"
-              className="rounded-lg px-4 py-2 text-sm font-bold transition-all hover:text-gray-950 aria-[selected=false]:text-gray-700 aria-[selected=true]:bg-white aria-[selected=true]:text-gray-950 aria-[selected=true]:shadow-xs aria-[selected=true]:ring-1 aria-[selected=true]:ring-gray-300 dark:hover:text-white dark:aria-[selected=false]:text-gray-300 dark:aria-[selected=true]:bg-gray-800 dark:aria-[selected=true]:text-white dark:aria-[selected=true]:ring-gray-700">
+              className="rounded-lg px-4 py-2 text-sm font-bold transition-all hover:text-gray-950 aria-[selected=false]:text-gray-800 aria-[selected=true]:bg-white aria-[selected=true]:text-gray-950 aria-[selected=true]:shadow-xs dark:aria-[selected=true]:bg-gray-200">
               1. Details
             </TabsTrigger>
             <TabsTrigger
               value="invoices"
-              className="rounded-lg px-4 py-2 text-sm font-bold transition-all hover:text-gray-950 aria-[selected=false]:text-gray-700 aria-[selected=true]:bg-white aria-[selected=true]:text-gray-950 aria-[selected=true]:shadow-xs aria-[selected=true]:ring-1 aria-[selected=true]:ring-gray-300 dark:hover:text-white dark:aria-[selected=false]:text-gray-300 dark:aria-[selected=true]:bg-gray-800 dark:aria-[selected=true]:text-white dark:aria-[selected=true]:ring-gray-700">
+              className="rounded-lg px-4 py-2 text-sm font-bold transition-all hover:text-gray-950 aria-[selected=false]:text-gray-800 aria-[selected=true]:bg-white aria-[selected=true]:text-gray-950 aria-[selected=true]:shadow-xs dark:aria-[selected=true]:bg-gray-200">
               2. Invoices & goods
             </TabsTrigger>
             <TabsTrigger
               value="documents"
-              className="rounded-lg px-4 py-2 text-sm font-bold transition-all hover:text-gray-950 aria-[selected=false]:text-gray-700 aria-[selected=true]:bg-white aria-[selected=true]:text-gray-950 aria-[selected=true]:shadow-xs aria-[selected=true]:ring-1 aria-[selected=true]:ring-gray-300 dark:hover:text-white dark:aria-[selected=false]:text-gray-300 dark:aria-[selected=true]:bg-gray-800 dark:aria-[selected=true]:text-white dark:aria-[selected=true]:ring-gray-700">
+              className="rounded-lg px-4 py-2 text-sm font-bold transition-all hover:text-gray-950 aria-[selected=false]:text-gray-800 aria-[selected=true]:bg-white aria-[selected=true]:text-gray-950 aria-[selected=true]:shadow-xs dark:aria-[selected=true]:bg-gray-200">
               3. Others
             </TabsTrigger>
           </TabsList>
