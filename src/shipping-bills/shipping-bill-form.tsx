@@ -5,14 +5,14 @@ import { stateOptions } from '@/data/states'
 import { Trades } from '@/data/trade-agrements'
 import { cargoOptions, contractTypes, paymentTypes, priceInclusionTypes, sealTypes, weightUnits } from '@/data/types'
 import { BranchDialog, PartyDialog } from './party-dialogs'
-import { billSchema } from './schema'
+import { BillFormContext, useShippingBillForm } from './hooks/use-shipping-bill-form'
+import { useMarksAndNumbers } from './hooks/use-marks-and-numbers'
 import { routes } from '@/shared/route-paths'
-import { useFieldArray, useForm } from 'core/form'
 import { Form, SubmitButton } from 'core/form/components'
 import { navigate, useParams } from 'core/routing'
 import { toast } from 'core/toast-manager'
 import { RrCaretDown } from 'icons/rr/fi-rr-caret-down'
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { getFormContext, RegisterOptions, useController } from 'ui/form'
 import { Button } from 'ui/basic/button'
 import { Card, CardContent, CardHeader } from 'ui/basic/card'
@@ -26,7 +26,6 @@ import { Tabs, TabsList, TabsTrigger } from 'ui/interactive/tabs'
 import { clsx, getContext } from 'ui/utils'
 import { getDemoData, saveBill, useDemoData } from './store/demo-store'
 import { shippingBillService } from './services/shipping-bill-service'
-import { getMarksAndNumbersOptions, MarksAndNumbersOption } from './services/marks-and-numbers-source'
 import {
   BillInvoiceForm,
   Branch,
@@ -1078,92 +1077,29 @@ function DocumentItem({ formCtx, index, onRemove }: { formCtx: BillFormContext; 
 
 function BillEditor({ bill }: { bill?: SavedBill }) {
   const { exporters, businesses } = useDemoData()
-  const formCtx = useForm<ShippingBillFormValues>(billSchema, { defaultValues: bill?.values ?? emptyBill() })
-  const { register, control, setValue, formState } = formCtx.hooks
-  const values = formCtx.hooks.watch()
-  const { fields: invoices, append: addInvoice, remove: removeInvoice } = useFieldArray({ control, name: 'invoices' })
   const {
-    fields: containers,
-    append: addContainer,
-    remove: removeContainer
-  } = useFieldArray({ control, name: 'containers' })
-  const {
-    fields: packingRanges,
-    append: addPackingRange,
-    remove: removePackingRange
-  } = useFieldArray({ control, name: 'packingRanges' })
-  const {
-    fields: documents,
-    append: addDocument,
-    remove: removeDocument
-  } = useFieldArray({ control, name: 'documents' })
-  const { fields: licenses, append: addLicense, remove: removeLicense } = useFieldArray({ control, name: 'licenses' })
-  const [activeTab, setActiveTab] = useState('details')
-  const [draftId, setDraftId] = useState<number | undefined>(bill?.id)
+    formCtx,
+    values,
+    setValue,
+    invoices: { fields: invoices, append: addInvoice, remove: removeInvoice },
+    containers: { fields: containers, append: addContainer, remove: removeContainer },
+    packingRanges: { fields: packingRanges, append: addPackingRange, remove: removePackingRange },
+    documents: { fields: documents, append: addDocument, remove: removeDocument },
+    licenses: { fields: licenses, append: addLicense, remove: removeLicense },
+    activeTab,
+    setActiveTab,
+    draftId,
+    setDraftId
+  } = useShippingBillForm(bill)
   const [quickAdd, setQuickAdd] = useState<QuickAdd | null>(null)
   const [quickBranch, setQuickBranch] = useState<QuickBranch | null>(null)
-  const [marksAndNumbersOptions, setMarksAndNumbersOptions] = useState<MarksAndNumbersOption[]>([])
-  const [marksAndNumbersLoading, setMarksAndNumbersLoading] = useState(false)
-  const previousExporterId = useRef(values.exporterId)
+  const { options: marksAndNumbersOptions, isLoading: marksAndNumbersLoading } = useMarksAndNumbers(
+    values.exporterId,
+    setValue
+  )
   const consigneeOptions = businesses.filter(
     (business) => business.isConsignee || String(business.id) === values.consigneeId
   )
-
-  useEffect(() => {
-    const exporterId = values.exporterId
-    if (previousExporterId.current !== exporterId) {
-      previousExporterId.current = exporterId
-      setValue('marksAndNumbers', '', { shouldValidate: true })
-    }
-
-    let cancelled = false
-    setMarksAndNumbersOptions([])
-    setMarksAndNumbersLoading(Boolean(exporterId))
-    if (exporterId) {
-      void getMarksAndNumbersOptions(exporterId)
-        .then((options) => {
-          if (cancelled) return
-          setMarksAndNumbersOptions(options)
-          setMarksAndNumbersLoading(false)
-        })
-        .catch(() => {
-          if (cancelled) return
-          setMarksAndNumbersOptions([])
-          setMarksAndNumbersLoading(false)
-        })
-    }
-
-    return () => {
-      cancelled = true
-    }
-  }, [setValue, values.exporterId])
-
-  useEffect(() => {
-    if (!formState.submitCount || !Object.keys(formState.errors).length) return
-    console.log('Form validation errors on submit:', formState.errors)
-    toast.error('Please check the required fields')
-    if (
-      [
-        'jobDate',
-        'exporterId',
-        'exporterBranchId',
-        'consigneeId',
-        'consigneeBranchId',
-        'loadingPort',
-        'finalDestinationPort'
-      ].some((field) => field in formState.errors)
-    )
-      setActiveTab('details')
-    else if (formState.errors.invoices) setActiveTab('invoices')
-    else if (
-      formState.errors.containers ||
-      formState.errors.packingRanges ||
-      formState.errors.documents ||
-      formState.errors.licenses
-    )
-      setActiveTab('documents')
-    // else: keep user on whichever tab they submitted from
-  }, [formState.submitCount, formState.errors])
 
   async function handleSave(data: ShippingBillFormValues) {
     try {
