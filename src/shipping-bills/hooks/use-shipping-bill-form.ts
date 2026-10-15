@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
 import { useFieldArray, useForm } from 'core/form'
 import { toast } from 'core/toast-manager'
+import { useEffect, useState } from 'react'
 import { emptyBill, SavedBill, ShippingBillFormValues } from '../model'
 import { billSchema } from '../schema'
 
@@ -45,5 +45,19 @@ export function useShippingBillForm(bill?: SavedBill) {
     // else: keep user on whichever tab they submitted from
   }, [formState.submitCount, formState.errors])
 
-  return { formCtx, values, setValue, formState, invoices, containers, packingRanges, documents, licenses, activeTab, setActiveTab, draftId, setDraftId }
+  return {
+    formCtx,
+    values,
+    setValue,
+    formState,
+    invoices,
+    containers,
+    packingRanges,
+    documents,
+    licenses,
+    activeTab,
+    setActiveTab,
+    draftId,
+    setDraftId
+  }
 }
