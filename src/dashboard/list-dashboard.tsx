@@ -1,6 +1,6 @@
 import { routes } from '@/shared/route-paths'
 import { invoiceTotal, SavedBill } from '@/shipping-bills/model'
-import { shippingBillService } from '@/shipping-bills/shipping-bill-service'
+import { shippingBillService } from '@/shipping-bills/services/shipping-bill-service'
 import { navigate } from 'core/routing'
 import { toast } from 'core/toast-manager'
 import { useEffect, useState } from 'react'

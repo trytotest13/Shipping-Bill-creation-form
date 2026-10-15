@@ -1,5 +1,5 @@
-import { getDemoData } from './demo-store'
-import { Branch, Business, Exporter, loadingPorts, PortOption, ports } from './model'
+import { getDemoData } from '../store/demo-store'
+import { Branch, Business, Exporter, loadingPorts, PortOption, ports } from '../model'
 
 const MOCK_DELAY_MS = 250
 

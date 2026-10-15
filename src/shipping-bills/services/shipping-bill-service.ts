@@ -1,4 +1,4 @@
-import { emptyBill, emptyInvoice, SavedBill, ShippingBillFormValues } from './model'
+import { emptyBill, emptyInvoice, SavedBill, ShippingBillFormValues } from '../model'
 
 const BASE_URL =
   import.meta.env.VITE_BASE_URL ||

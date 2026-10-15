@@ -1,4 +1,4 @@
-import { saveBranch, saveBusiness, saveExporter } from '@/shipping-bills/demo-store'
+import { saveBranch, saveBusiness, saveExporter } from '@/shipping-bills/store/demo-store'
 import { Branch, Business, countries, Exporter } from '@/shipping-bills/model'
 import { InferType, s, useForm } from 'core/form'
 import { Form, SubmitButton } from 'core/form/components'

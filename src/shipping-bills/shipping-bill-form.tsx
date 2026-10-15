@@ -23,9 +23,9 @@ import { Popover, PopoverContent, PopoverTrigger } from 'ui/interactive/popover'
 import { PopoverContext } from 'ui/interactive/popover-context'
 import { Tabs, TabsList, TabsTrigger } from 'ui/interactive/tabs'
 import { clsx, getContext } from 'ui/utils'
-import { getDemoData, saveBill, useDemoData } from './demo-store'
-import { shippingBillService } from './shipping-bill-service'
-import { getMarksAndNumbersOptions, MarksAndNumbersOption } from './marks-and-numbers-source'
+import { getDemoData, saveBill, useDemoData } from './store/demo-store'
+import { shippingBillService } from './services/shipping-bill-service'
+import { getMarksAndNumbersOptions, MarksAndNumbersOption } from './services/marks-and-numbers-source'
 import {
   BillInvoiceForm,
   Branch,
@@ -42,7 +42,7 @@ import {
   SavedBill,
   ShippingBillFormValues
 } from './model'
-import { partyMockService } from './party-mock-service'
+import { partyMockService } from './services/party-mock-service'
 import { workflowSteps } from './workflow'
 
 const positive = s.string().refine((value) => (Number(value) > 0 ? undefined : 'Enter a number above zero'))

@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react'
-import { Branch, Business, Exporter, SavedBill, ShippingBillFormValues, toShippingBillPayload } from './model'
+import { Branch, Business, Exporter, SavedBill, ShippingBillFormValues, toShippingBillPayload } from '../model'
 
 interface DemoData {
   exporters: Exporter[]
