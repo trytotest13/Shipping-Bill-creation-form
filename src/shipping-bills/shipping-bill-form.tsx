@@ -230,11 +230,11 @@ function AsyncPartySelect({
           )}
           disabled={disabled}>
           <div className="flex items-center p-2 text-sm">
-            <span className={selectedLabel ? 'font-medium text-gray-950' : 'text-gray-700'}>
+            <span className={selectedLabel ? 'font-semibold text-gray-950' : 'text-gray-800'}>
               {selectedLabel || placeholder}
             </span>
           </div>
-          <RrCaretDown className="size-4 text-gray-700 transition-transform group-data-[state=open]:rotate-180" />
+          <RrCaretDown className="size-4 text-gray-800 transition-transform group-data-[state=open]:rotate-180" />
         </PopoverTrigger>
         <InputError<ShippingBillFormValues> name={name as Path<ShippingBillFormValues>} />
         <PopoverContent className="overflow-hidden rounded-md border border-gray-200 shadow-lg">
@@ -244,7 +244,7 @@ function AsyncPartySelect({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Type to search..."
-              className="focus:border-primary-500 focus:ring-primary-500 w-full rounded border border-gray-200 bg-inherit px-2.5 py-1.5 text-sm text-gray-950 outline-none placeholder:text-gray-700 focus:ring-1"
+              className="focus:border-primary-500 focus:ring-primary-500 w-full rounded border border-gray-200 bg-inherit px-2.5 py-1.5 text-sm text-gray-950 outline-none placeholder:text-gray-800 focus:ring-1"
               autoFocus
             />
           </div>
@@ -357,7 +357,7 @@ function PartyFields({
     <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <div>
         <div className="mb-1 flex items-center justify-between gap-2">
-          <span className="text-sm font-medium">{label}</span>
+          <span className="text-sm font-semibold text-gray-950">{label}</span>
           <button
             type="button"
             className="text-primary-700 dark:text-primary-400 text-xs font-semibold hover:underline"
@@ -398,7 +398,7 @@ function PartyFields({
       </div>
       <div>
         <div className="mb-1 flex items-center justify-between gap-2">
-          <span className="text-sm font-medium">Branch / address</span>
+          <span className="text-sm font-semibold text-gray-950">Branch / address</span>
           {owner && (
             <button
               type="button"

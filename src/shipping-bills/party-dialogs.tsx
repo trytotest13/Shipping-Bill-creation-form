@@ -120,7 +120,7 @@ export function PartyDialog({ kind, party, initialRole, onClose, onSaved }: Part
             <h2 className="text-lg font-semibold">
               {isNew ? 'Add' : 'Edit'} {kind}
             </h2>
-            <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
+            <p className="mt-1 text-sm font-medium text-gray-800">
               {isNew
                 ? 'Add the main details and one address. You can add more branches later.'
                 : 'Update the shared master record.'}

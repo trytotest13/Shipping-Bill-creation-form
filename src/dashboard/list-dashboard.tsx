@@ -4,7 +4,6 @@ import { shippingBillService } from '@/shipping-bills/services/shipping-bill-ser
 import { navigate } from 'core/routing'
 import { toast } from 'core/toast-manager'
 import { useEffect, useState } from 'react'
-import { Badge } from 'ui/basic/badge'
 import { Button } from 'ui/basic/button'
 import { Card, CardContent } from 'ui/basic/card'
 import { Table } from 'ui/basic/table'
@@ -93,27 +92,27 @@ export default function ListDashboard() {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <Card>
+        <Card className="border border-gray-300 dark:border-gray-800">
           <CardContent className="pt-5">
-            <p className="text-xs font-medium text-gray-800">Shipping bills</p>
-            <p className="mt-1 text-2xl font-semibold">{bills.length}</p>
+            <p className="text-xs font-semibold text-gray-800">Shipping bills</p>
+            <p className="mt-1 text-2xl font-bold text-gray-950">{bills.length}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border border-gray-300 dark:border-gray-800">
           <CardContent className="pt-5">
-            <p className="text-xs font-medium text-gray-800">Exporters</p>
-            <p className="mt-1 text-2xl font-semibold">{uniqueExportersCount || 1}</p>
+            <p className="text-xs font-semibold text-gray-800">Exporters</p>
+            <p className="mt-1 text-2xl font-bold text-gray-950">{uniqueExportersCount || 1}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border border-gray-300 dark:border-gray-800">
           <CardContent className="pt-5">
-            <p className="text-xs font-medium text-gray-800">Businesses / Consignees</p>
-            <p className="mt-1 text-2xl font-semibold">{uniqueConsigneesCount || 1}</p>
+            <p className="text-xs font-semibold text-gray-800">Businesses / Consignees</p>
+            <p className="mt-1 text-2xl font-bold text-gray-950">{uniqueConsigneesCount || 1}</p>
           </CardContent>
         </Card>
       </div>
 
-      <Card>
+      <Card className="border border-gray-300 dark:border-gray-800">
         <CardContent className="space-y-4 pt-6">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div className="w-full max-w-sm">
@@ -124,21 +123,21 @@ export default function ListDashboard() {
                 placeholder="Job, invoice, exporter or consignee"
               />
             </div>
-            <span className="text-sm font-medium text-gray-800">
+            <span className="text-sm font-semibold text-gray-800">
               {filtered.length} {filtered.length === 1 ? 'bill' : 'bills'}
             </span>
           </div>
           {filtered.length ? (
             <Table>
-              <thead>
+              <thead className="border-b border-gray-300 bg-gray-100/75 dark:border-gray-700 dark:bg-gray-800/75">
                 <tr>
-                  <th>Job</th>
-                  <th>Exporter → Consignee</th>
-                  <th>Route</th>
-                  <th>Invoices</th>
-                  <th>Status</th>
-                  <th>Updated</th>
-                  <th className="text-right">Action</th>
+                  <th className="py-2.5 font-bold text-gray-950">Job</th>
+                  <th className="py-2.5 font-bold text-gray-950">Exporter → Consignee</th>
+                  <th className="py-2.5 font-bold text-gray-950">Route</th>
+                  <th className="py-2.5 font-bold text-gray-950">Invoices</th>
+                  <th className="py-2.5 font-bold text-gray-950">Status</th>
+                  <th className="py-2.5 font-bold text-gray-950">Updated</th>
+                  <th className="py-2.5 text-right font-bold text-gray-950">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -147,28 +146,32 @@ export default function ListDashboard() {
                   const consigneeName = bill.values.consigneeName || '—'
                   const total = bill.values.invoices.reduce((sum, invoice) => sum + invoiceTotal(invoice), 0)
                   return (
-                    <tr key={bill.id}>
-                      <td className="font-medium">
+                    <tr
+                      key={bill.id}
+                      className="border-b border-gray-200 hover:bg-gray-50/80 dark:border-gray-800 dark:hover:bg-gray-800/50">
+                      <td className="font-semibold text-gray-950">
                         {bill.values.jobNumber ? `#${bill.values.jobNumber}` : `Bill #${bill.id}`}
-                        <span className="block text-xs font-normal text-gray-800">{bill.values.jobDate}</span>
+                        <span className="block text-xs font-medium text-gray-800">{bill.values.jobDate}</span>
                       </td>
-                      <td>
+                      <td className="font-medium text-gray-950">
                         {exporterName}
-                        <span className="block text-xs text-gray-800">to {consigneeName}</span>
+                        <span className="block text-xs font-normal text-gray-800">to {consigneeName}</span>
                       </td>
-                      <td>
+                      <td className="font-medium text-gray-950">
                         {bill.values.loadingPort || '—'} → {bill.values.finalDestinationPort || '—'}
                       </td>
-                      <td>
+                      <td className="font-semibold text-gray-950">
                         {bill.values.invoices.length}
-                        <span className="block text-xs text-gray-800">
+                        <span className="block text-xs font-medium text-gray-800">
                           {total.toLocaleString(undefined, { maximumFractionDigits: 2 })} across items
                         </span>
                       </td>
                       <td>
-                        <Badge variant="secondary">Draft</Badge>
+                        <span className="inline-flex items-center rounded-md border border-gray-300 bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-950 dark:border-gray-700 dark:bg-gray-800">
+                          Draft
+                        </span>
                       </td>
-                      <td>
+                      <td className="text-sm font-medium text-gray-800">
                         {bill.updated && !isNaN(new Date(bill.updated).getTime())
                           ? new Date(bill.updated).toLocaleDateString()
                           : '—'}
