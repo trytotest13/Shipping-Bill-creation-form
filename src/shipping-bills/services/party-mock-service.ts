@@ -8,9 +8,6 @@ function delay<T>(value: T, ms = MOCK_DELAY_MS): Promise<T> {
 }
 
 export const partyMockService = {
-  /**
-   * Search Exporters by name or IEC
-   */
   async searchExporters(query: string): Promise<Exporter[]> {
     const { exporters } = getDemoData()
     const q = query.trim().toLowerCase()
@@ -20,9 +17,6 @@ export const partyMockService = {
     return delay(filtered)
   },
 
-  /**
-   * Search Branches belonging to a specific Exporter ID
-   */
   async searchExporterBranches(exporterId: string, query: string): Promise<Branch[]> {
     if (!exporterId) return delay([])
     const { exporters } = getDemoData()
@@ -36,9 +30,6 @@ export const partyMockService = {
     return delay(filtered)
   },
 
-  /**
-   * Search Consignees by name
-   */
   async searchConsignees(query: string): Promise<Business[]> {
     const { businesses } = getDemoData()
     const q = query.trim().toLowerCase()
@@ -48,9 +39,6 @@ export const partyMockService = {
     return delay(filtered)
   },
 
-  /**
-   * Search Branches belonging to a specific Consignee ID
-   */
   async searchConsigneeBranches(consigneeId: string, query: string): Promise<Branch[]> {
     if (!consigneeId) return delay([])
     const { businesses } = getDemoData()
@@ -64,25 +52,17 @@ export const partyMockService = {
     return delay(filtered)
   },
 
-  /**
-   * Fetch a single Exporter by ID (used for label resolution)
-   */
   async getExporterById(exporterId: string): Promise<Exporter | undefined> {
     const { exporters } = getDemoData()
     return delay(exporters.find((item) => String(item.id) === exporterId), 100)
   },
 
-  /**
-   * Fetch a single Consignee by ID (used for label resolution)
-   */
   async getConsigneeById(consigneeId: string): Promise<Business | undefined> {
     const { businesses } = getDemoData()
     return delay(businesses.find((item) => String(item.id) === consigneeId), 100)
   },
 
-  /**
-   * Search Port of Loading (Indian ports: code starts with 'IN')
-   */
+  // Origin ports must be Indian ports with 'IN' prefix.
   async searchLoadingPorts(query: string): Promise<PortOption[]> {
     const q = query.trim().toLowerCase()
     const portsList = loadingPorts.filter((port) => port.code.startsWith('IN'))
@@ -92,9 +72,6 @@ export const partyMockService = {
     return delay(filtered)
   },
 
-  /**
-   * Search Final Destination Ports (all ports)
-   */
   async searchDestinationPorts(query: string): Promise<PortOption[]> {
     const q = query.trim().toLowerCase()
     const filtered = ports.filter(
@@ -103,9 +80,6 @@ export const partyMockService = {
     return delay(filtered)
   },
 
-  /**
-   * Fetch Port by Code (used for label resolution)
-   */
   async getPortByCode(code: string): Promise<PortOption | undefined> {
     return delay(ports.find((port) => port.code === code), 100)
   }

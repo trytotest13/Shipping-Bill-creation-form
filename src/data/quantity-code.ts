@@ -1,8 +1,7 @@
-// Initial Source: https://docs.ewaybillgst.gov.in/apidocs/master-codes-list.html
-// Additional Source: https://www.eximguru.com/traderesources/quantity01.aspx
-// Updated from various for new additional Quantity codes
+// Sources:
+// - https://docs.ewaybillgst.gov.in/apidocs/master-codes-list.html
+// - https://www.eximguru.com/traderesources/quantity01.aspx
 
-// Unique Quantity Codes (UQC) List, Organised by Alphabetical Order
 export const quantityCodes = [
   { value: 'AMP', label: 'AMP - Ampules' },
 
@@ -52,8 +51,6 @@ export const quantityCodes = [
   { value: 'MUS', label: 'MUS - Million Units' },
 
   { value: 'NOS', label: 'NOS - Numbers' },
-
-  //   { value: 'OTH', label: 'OTH - Others' },
 
   { value: 'PAC', label: 'PAC - Packs' },
   { value: 'PCS', label: 'PCS - Pieces' },

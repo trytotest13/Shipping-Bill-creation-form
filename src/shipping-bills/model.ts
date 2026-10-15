@@ -56,10 +56,6 @@ export const loadingPorts: PortOption[] = [
 
 
 export const ports: PortOption[] = [
-  // { code: 'INNSA1', name: 'Nhava Sheva', countryCode: 'IN' },
-  // { code: 'INMUN1', name: 'Mundra', countryCode: 'IN' },
-  // { code: 'INMAA1', name: 'Chennai', countryCode: 'IN' },
-  // { code: 'INBOM4', name: 'Mumbai Air Cargo', countryCode: 'IN' },
   { code: 'USMSY', name: 'New Orleans', countryCode: 'US' },
   { code: 'USLAX', name: 'Los Angeles', countryCode: 'US' },
   { code: 'DEHAM', name: 'Hamburg', countryCode: 'DE' },

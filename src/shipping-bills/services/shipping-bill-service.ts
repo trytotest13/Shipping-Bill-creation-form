@@ -351,16 +351,10 @@ export const API_SEED_SHIPPING_BILLS = [
 let internalBills: SavedBill[] = normalizeApiBills(API_SEED_SHIPPING_BILLS)
 
 export const shippingBillService = {
-  /**
-   * Return initial in-memory bills
-   */
   getInitialBills(): SavedBill[] {
     return internalBills
   },
 
-  /**
-   * Find bill by id
-   */
   getById(id: string | number): SavedBill | undefined {
     return internalBills.find((b) => String(b.id) === String(id))
   },

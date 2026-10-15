@@ -170,7 +170,6 @@ function AsyncPartySelect({
   const getInitialLabelRef = useRef(getInitialLabel)
   getInitialLabelRef.current = getInitialLabel
 
-  // Fetch label when selected value changes or on mount
   useEffect(() => {
     let active = true
     if (value) {
@@ -190,7 +189,6 @@ function AsyncPartySelect({
     }
   }, [value, ...deps])
 
-  // Fetch search results asynchronously whenever query changes or popover opens
   useEffect(() => {
     if (!isOpen && !query) return
 
@@ -567,9 +565,7 @@ function InvoiceEditor({
 
           <div className="overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
             <div className="grid grid-cols-1 divide-y divide-gray-200 lg:grid-cols-2 lg:divide-x lg:divide-y-0">
-              {/* Left Column: Freight, Commission, Other Deductions */}
               <div className="divide-y divide-gray-200 p-2 sm:p-3">
-                {/* Freight */}
                 <div className="py-2.5">
                   <div className="mb-1.5 flex items-center justify-between">
                     <span className="text-xs font-semibold text-gray-950">Freight</span>
@@ -609,7 +605,6 @@ function InvoiceEditor({
                   </div>
                 </div>
 
-                {/* Commission */}
                 <div className="py-2.5">
                   <div className="mb-1.5 flex items-center justify-between">
                     <span className="text-xs font-semibold text-gray-950">Commission</span>
@@ -649,7 +644,6 @@ function InvoiceEditor({
                   </div>
                 </div>
 
-                {/* Other Deductions */}
                 <div className="pt-2.5">
                   <div className="mb-1.5 flex items-center justify-between">
                     <span className="text-xs font-semibold text-gray-950">Other Deductions</span>
@@ -692,9 +686,7 @@ function InvoiceEditor({
                 </div>
               </div>
 
-              {/* Right Column: Insurance, Discount, Packing Charges */}
               <div className="divide-y divide-gray-200 p-2 sm:p-3">
-                {/* Insurance */}
                 <div className="py-2.5">
                   <div className="mb-1.5 flex items-center justify-between">
                     <span className="text-xs font-semibold text-gray-950">Insurance</span>
@@ -734,7 +726,6 @@ function InvoiceEditor({
                   </div>
                 </div>
 
-                {/* Discount */}
                 <div className="py-2.5">
                   <div className="mb-1.5 flex items-center justify-between">
                     <span className="text-xs font-semibold text-gray-950">Discount</span>
@@ -774,7 +765,6 @@ function InvoiceEditor({
                   </div>
                 </div>
 
-                {/* Packing Charges */}
                 <div className="pt-2.5">
                   <div className="mb-1.5 flex items-center justify-between">
                     <span className="text-xs font-semibold text-gray-950">Packing Charges</span>
@@ -916,7 +906,6 @@ function InvoiceEditor({
                       placeholder="Select if applicable"
                     />
                   </div>
-                  {/* Row 3: drawback inputs (conditional) + checkboxes */}
                   <div className="mb-3 flex flex-wrap items-end gap-4">
                     {(() => {
                       const selectedScheme = schemeCodes.find((s) => s.value === item.schemeCode)
