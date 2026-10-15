@@ -1,31 +1,48 @@
-## Export Software Frontend
+# Shipping Bill Creation Form
 
-Built on top of [fe-zen-arch](git@github.com:shivamkj/fe-zen-arch.git) — the core shared architecture for B2B SaaS frontends.
+An enterprise-grade export software frontend for creating, managing, and filing Customs & ICEGATE EDI Shipping Bills. Built on React 19, Tailwind CSS v4, React Hook Form, and Zustand with high-contrast accessibility across both dark and light modes.
 
-### Libraries
+## Tech Stack
 
-- **React** [Docs](https://react.dev/reference/react)
-- **Tailwind CSS** [Docs](https://tailwindcss.com/docs/installation)
-- **React Query** [Docs](https://tanstack.com/query/latest/docs/framework/react/overview)
-- **React Hook Form** [Docs](https://www.react-hook-form.com/get-started)
-- **Zustand** [Docs](https://zustand.docs.pmnd.rs/)
+- **Framework**: React 19 + Vite 8
+- **Styling**: Tailwind CSS v4 (with strict custom color tokens & WCAG AA contrast)
+- **Forms & Validation**: React Hook Form + Zod
+- **State Management**: Zustand
+- **Architecture**: `fe-zen-arch` modular workspace architecture
 
-### Setup
+## Quick Start
 
+### 1. Clone with submodules
 ```bash
-pnpm install   # fe-zen-arch is included as a git submodule, init it first if missing
-pnpm dev       # dev server on port 5173
-pnpm lint      # prettier + tsc + eslint (fe-zen-arch lint pipeline)
-pnpm build     # production build
+git clone --recursive https://github.com/trytotest13/Shipping-Bill-creation-form.git
+cd Shipping-Bill-creation-form
 ```
 
-### Notes
+If already cloned without submodules:
+```bash
+git submodule update --init --recursive
+```
 
-- `core`, `ui`, `auth`, `icons` are fe-zen-arch workspace packages, aliased via tsconfig paths & vite aliases.
-- Forms are built directly with `useForm` from `core/form` + `Form` / `SubmitButton` from `core/form/components` — no generic form templates.
-- Routing uses fe-zen-arch's zustand router: routes defined in `src/shared/routes.tsx`, paths in `src/shared/route-paths.ts`.
-- Auth uses the fe-zen-arch auth module (routes, interceptors, login pages) out of the box.
-- API base URL comes from `PUBLIC_API_URL` (`.env`).
-- Don't use react-query mutation for react-hook-form submit handler.
-- For HMR (hot refresh), the file must export only react component, and not any other constant or object.
-- While most input elements use `...register('name')`, custom elements like select require `<Select<T> name="name" />` instead.
+### 2. Install dependencies & run
+```bash
+pnpm install
+pnpm dev
+```
+The application will launch at `http://localhost:5173`.
+
+### 3. Build & Type Check
+```bash
+pnpm tsc --noEmit   # Strict TypeScript check (0 errors)
+pnpm build          # Production bundle
+```
+
+## Project Documentation
+
+Detailed specifications and architectural documentation are available in the [`docs/`](./docs) folder:
+- [Product Requirements Document (PRD)](./docs/prd.md)
+- [Technical Requirements Document (TRD)](./docs/trd.md)
+- [Architecture & State Flow](./docs/architecture.md)
+- [Design Tokens & Theme](./docs/design.md)
+- [Schema & Validation](./docs/schema.md)
+- [Coding Standards & Rules](./docs/rules.md)
+

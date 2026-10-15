@@ -4,19 +4,17 @@ import schemeCodes from '@/data/scheme-codes'
 import { stateOptions } from '@/data/states'
 import { Trades } from '@/data/trade-agrements'
 import { cargoOptions, contractTypes, paymentTypes, priceInclusionTypes, sealTypes, weightUnits } from '@/data/types'
-import { BranchDialog, PartyDialog } from './party-dialogs'
-import { BillFormContext, useShippingBillForm } from './hooks/use-shipping-bill-form'
-import { useMarksAndNumbers } from './hooks/use-marks-and-numbers'
 import { routes } from '@/shared/route-paths'
+import { useFieldArray } from 'core/form'
 import { Form } from 'core/form/components'
 import { navigate, useParams } from 'core/routing'
 import { toast } from 'core/toast-manager'
 import { RrCaretDown } from 'icons/rr/fi-rr-caret-down'
-import { useState } from 'react'
-import { getFormContext, RegisterOptions, useController } from 'ui/form'
-import type { Path } from 'ui/form'
+import { useEffect, useRef, useState } from 'react'
 import { Button } from 'ui/basic/button'
 import { Card, CardContent, CardHeader } from 'ui/basic/card'
+import type { Path } from 'ui/form'
+import { getFormContext, RegisterOptions, useController } from 'ui/form'
 import { Checkbox } from 'ui/inputs/checkbox'
 import { InputError } from 'ui/inputs/error'
 import { Input } from 'ui/inputs/input'
@@ -25,13 +23,12 @@ import { Popover, PopoverContent, PopoverTrigger } from 'ui/interactive/popover'
 import { PopoverContext } from 'ui/interactive/popover-context'
 import { Tabs, TabsList, TabsTrigger } from 'ui/interactive/tabs'
 import { clsx, getContext } from 'ui/utils'
-import { getDemoData, saveBill, useDemoData } from './store/demo-store'
-import { shippingBillService } from './services/shipping-bill-service'
+import { useMarksAndNumbers } from './hooks/use-marks-and-numbers'
+import { BillFormContext, useShippingBillForm } from './hooks/use-shipping-bill-form'
 import {
   BillInvoiceForm,
   Branch,
   Business,
-  emptyBill,
   emptyDocument,
   emptyInvoice,
   emptyItem,
@@ -43,10 +40,11 @@ import {
   SavedBill,
   ShippingBillFormValues
 } from './model'
+import { BranchDialog, PartyDialog } from './party-dialogs'
 import { partyMockService } from './services/party-mock-service'
+import { shippingBillService } from './services/shipping-bill-service'
+import { getDemoData, saveBill, useDemoData } from './store/demo-store'
 import { workflowSteps } from './workflow'
-
-type BillFormContext = ReturnType<typeof useForm<ShippingBillFormValues>>
 
 interface QuickAdd {
   kind: 'exporter' | 'business'
@@ -77,7 +75,7 @@ function SectionHeading({ title, description }: { title: string; description?: s
   return (
     <div className="mb-4">
       <h2 className="text-base font-semibold text-gray-950">{title}</h2>
-      {description && <p className="mt-1 text-sm text-gray-500">{description}</p>}
+      {description && <p className="mt-1 text-sm text-gray-800">{description}</p>}
     </div>
   )
 }
@@ -95,11 +93,14 @@ function Advanced({
 }) {
   return (
     <details
-      className="rounded-lg border border-gray-200 bg-gray-50/50 p-4"
+      className="group rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all"
       open={open}
       onToggle={(e) => onToggle?.(e.currentTarget.open)}>
-      <summary className="cursor-pointer text-sm font-medium text-gray-700">{title}</summary>
-      <div className="mt-4">{children}</div>
+      <summary className="hover:text-primary-600 flex cursor-pointer items-center justify-between text-sm font-semibold text-gray-950 select-none">
+        <span>{title}</span>
+        <span className="text-xs font-normal text-gray-800 transition-transform group-open:rotate-180">▼</span>
+      </summary>
+      <div className="mt-4 border-t border-gray-200 pt-3">{children}</div>
     </details>
   )
 }
@@ -174,7 +175,7 @@ function AsyncPartySelect({
     let active = true
     if (value) {
       if (getInitialLabelRef.current) {
-        void getInitialLabelRef.current(String(value)).then((lbl) => {
+        void getInitialLabelRef.current(String(value)).then((lbl: string) => {
           if (active && lbl) setSelectedLabel(lbl)
         })
       } else {
@@ -198,7 +199,7 @@ function AsyncPartySelect({
     const timer = setTimeout(() => {
       void fetchOptionsRef
         .current(query)
-        .then((results) => {
+        .then((results: AsyncOption[]) => {
           if (active) {
             setOptions(results)
             setLoading(false)
@@ -221,41 +222,37 @@ function AsyncPartySelect({
   return (
     <div>
       <input type="hidden" name={name} value={value ?? ''} ref={ref} disabled={disabled} />
-      <Popover
-        placement="bottom-start"
-        fallbackPlacements={['top-start']}
-        onOpenCallback={(open) => setIsOpen(open)}>
+      <Popover placement="bottom-start" fallbackPlacements={['top-start']} onOpenCallback={(open) => setIsOpen(open)}>
         <PopoverTrigger
           className={clsx(
-            'outline-focus-select group flex w-full cursor-pointer items-center justify-between rounded border border-gray-200 pr-2 hover:border-gray-300 disabled:cursor-not-allowed disabled:opacity-50',
-            className || 'bg-white',
-            disabled && 'cursor-not-allowed opacity-50'
+            'outline-focus-select group flex w-full cursor-pointer items-center justify-between rounded border border-gray-200 bg-inherit pr-2 hover:border-gray-300 disabled:cursor-not-allowed disabled:opacity-50',
+            className
           )}
           disabled={disabled}>
           <div className="flex items-center p-2 text-sm">
-            <span className={selectedLabel ? 'font-medium text-gray-900' : 'text-gray-400'}>
+            <span className={selectedLabel ? 'font-medium text-gray-950' : 'text-gray-700'}>
               {selectedLabel || placeholder}
             </span>
           </div>
-          <RrCaretDown className="size-4 text-gray-400 transition-transform group-data-[state=open]:rotate-180" />
+          <RrCaretDown className="size-4 text-gray-700 transition-transform group-data-[state=open]:rotate-180" />
         </PopoverTrigger>
-        <InputError name={name} />
-        <PopoverContent className="overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg">
+        <InputError<ShippingBillFormValues> name={name as Path<ShippingBillFormValues>} />
+        <PopoverContent className="overflow-hidden rounded-md border border-gray-200 shadow-lg">
           <div className="border-b border-gray-100 p-2">
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Type to search..."
-              className="focus:border-primary-500 focus:ring-primary-500 w-full rounded border border-gray-200 px-2.5 py-1.5 text-sm outline-none focus:ring-1"
+              className="focus:border-primary-500 focus:ring-primary-500 w-full rounded border border-gray-200 bg-inherit px-2.5 py-1.5 text-sm text-gray-950 outline-none placeholder:text-gray-700 focus:ring-1"
               autoFocus
             />
           </div>
           <div className="max-h-56 overflow-y-auto p-1">
             {loading ? (
-              <div className="p-3 text-center text-xs text-gray-500">Searching mock service...</div>
+              <div className="p-3 text-center text-xs text-gray-800">Searching mock service...</div>
             ) : options.length === 0 ? (
-              <div className="p-3 text-center text-xs text-gray-400">No matching results found</div>
+              <div className="p-3 text-center text-xs text-gray-800">No matching results found</div>
             ) : (
               options.map((opt) => (
                 <PopoverOptionItem
@@ -301,10 +298,10 @@ function PopoverOptionItem({
       }}
       className={clsx(
         'flex cursor-pointer flex-col rounded p-2 text-sm transition-colors',
-        isSelected ? 'bg-primary-50 text-primary-900 font-semibold' : 'text-gray-950 hover:bg-gray-100'
+        isSelected ? 'bg-primary-600 font-semibold text-white' : 'text-gray-950 hover:bg-gray-100'
       )}>
       <span>{option.label}</span>
-      {option.sublabel && <span className="text-xs text-gray-500">{option.sublabel}</span>}
+      {option.sublabel && <span className="text-xs text-gray-800">{option.sublabel}</span>}
     </div>
   )
 }
@@ -322,11 +319,11 @@ function PartyFields({
 }: {
   formCtx: BillFormContext
   ownerName:
-  | 'exporterId'
-  | 'consigneeId'
-  | `invoices.${number}.buyerId`
-  | `invoices.${number}.thirdPartyId`
-  | `invoices.${number}.items.${number}.itemThirdPartyId`
+    | 'exporterId'
+    | 'consigneeId'
+    | `invoices.${number}.buyerId`
+    | `invoices.${number}.thirdPartyId`
+    | `invoices.${number}.items.${number}.itemThirdPartyId`
   branchName: BranchPath
   label: string
   kind: 'exporter' | 'business'
@@ -475,18 +472,38 @@ function InvoiceEditor({
   )
 
   return (
-    <Card className="mb-4">
-      <CardHeader className="flex-row items-start justify-between gap-3">
-        <div>
-          <h3 className="font-semibold">Invoice {index + 1}</h3>
+    <Card className="mb-6 overflow-hidden rounded-xl border border-gray-200 shadow-xs">
+      <CardHeader className="flex-row items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-3.5">
+        <div className="flex items-center gap-3">
+          <span className="bg-primary-600 flex size-7 items-center justify-center rounded-lg text-xs font-bold text-white shadow-xs">
+            #{index + 1}
+          </span>
+          <div>
+            <h3 className="text-sm font-bold text-gray-950">
+              {invoiceValues.invoiceNumber
+                ? `Invoice #${invoiceValues.invoiceNumber}`
+                : `Commercial Invoice ${index + 1}`}
+            </h3>
+            <p className="text-xs font-medium text-gray-800">
+              {invoiceValues.currency || 'USD'} ·{' '}
+              {contractTypes.find((c) => c.value === invoiceValues.contractType)?.label ||
+                invoiceValues.contractType ||
+                'FOB'}
+            </p>
+          </div>
         </div>
         {canRemove && (
-          <Button size="sm" variant="ghost" onClick={onRemove}>
+          <Button
+            size="sm"
+            variant="ghost"
+            type="button"
+            className="text-xs font-semibold text-red-600 hover:bg-red-50 hover:text-red-700"
+            onClick={onRemove}>
             Remove invoice
           </Button>
         )}
       </CardHeader>
-      <CardContent className="space-y-5">
+      <CardContent className="space-y-6 pt-6">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Input label="Invoice number" {...register(`invoices.${index}.invoiceNumber`)} />
           <Input label="Invoice date" type={dateType} {...register(`invoices.${index}.invoiceDate`)} />
@@ -516,10 +533,12 @@ function InvoiceEditor({
             rules={{ required: true }}
           />
         </div>
-        <label className="flex items-center gap-2 text-sm">
-          <Checkbox {...register(`invoices.${index}.buyerSameAsConsignee`)} />
-          Buyer & consignee are same
-        </label>
+        <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+          <label className="flex cursor-pointer items-center gap-2.5 text-sm font-semibold text-gray-950">
+            <Checkbox {...register(`invoices.${index}.buyerSameAsConsignee`)} />
+            Buyer & consignee are same
+          </label>
+        </div>
         {!buyerSame && (
           <PartyFields
             formCtx={formCtx}
@@ -533,198 +552,287 @@ function InvoiceEditor({
           />
         )}
 
-        <div className="space-y-4">
-          <div className="divide-y divide-gray-100 rounded-lg border border-gray-200">
-            <div className="grid grid-cols-1 divide-y divide-gray-100 lg:grid-cols-2 lg:divide-x lg:divide-y-0">
-              <div className="p-2">
-                <div className="flex flex-wrap items-center gap-2 lg:flex-nowrap">
-                  <span className="w-28 shrink-0 font-medium text-gray-900">Freight</span>
-                  <div className="flex items-center gap-1">
-                    <Input
-                      type="number"
-                      {...register(`invoices.${index}.freightRate`)}
-                      className="text-right"
-                      disabled={invoiceValues.freightAmount !== '' && invoiceValues.freightAmount != null}
-                      placeholder="Rate"
-                    />
-                    <span className="text-xs text-gray-500">%</span>
-                  </div>
-                  <Input
-                    type="number"
-                    {...register(`invoices.${index}.freightAmount`)}
-                    className="py-1 text-right"
-                    disabled={invoiceValues.freightRate !== '' && invoiceValues.freightRate != null}
-                    placeholder="Amount"
-                  />
-                  <Select<ShippingBillFormValues>
-                    name={`invoices.${index}.freightCurrency`}
-                    options={currencyOptions}
-                    placeholder={invoice.currency}
-                  />
-                </div>
-              </div>
-              <div className="p-2">
-                <div className="flex flex-wrap items-center gap-2 lg:flex-nowrap">
-                  <span className="w-28 shrink-0 font-medium text-gray-900">Insurance</span>
-                  <div className="flex items-center gap-1">
-                    <Input
-                      type="number"
-                      {...register(`invoices.${index}.insuranceRate`)}
-                      className="text-right"
-                      disabled={invoiceValues.insuranceAmount !== '' && invoiceValues.insuranceAmount != null}
-                      placeholder="Rate"
-                    />
-                    <span className="text-xs text-gray-500">%</span>
-                  </div>
-                  <Input
-                    type="number"
-                    {...register(`invoices.${index}.insuranceAmount`)}
-                    className="py-1 text-right"
-                    disabled={invoiceValues.insuranceRate !== '' && invoiceValues.insuranceRate != null}
-                    placeholder="Amount"
-                  />
-                  <Select<ShippingBillFormValues>
-                    name={`invoices.${index}.insuranceCurrency`}
-                    options={currencyOptions}
-                    placeholder={invoice.currency}
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 divide-y divide-gray-100 lg:grid-cols-2 lg:divide-x lg:divide-y-0">
-              <div className="p-2">
-                <div className="flex flex-wrap items-center gap-2 lg:flex-nowrap">
-                  <span className="w-28 shrink-0 font-medium text-gray-900">Commission</span>
-                  <div className="flex items-center gap-1">
-                    <Input
-                      type="number"
-                      {...register(`invoices.${index}.commissionRate`)}
-                      className="text-right"
-                      disabled={invoiceValues.commissionAmount !== '' && invoiceValues.commissionAmount != null}
-                      placeholder="Rate"
-                    />
-                    <span className="text-xs text-gray-500">%</span>
-                  </div>
-                  <Input
-                    type="number"
-                    {...register(`invoices.${index}.commissionAmount`)}
-                    className="py-1 text-right"
-                    disabled={invoiceValues.commissionRate !== '' && invoiceValues.commissionRate != null}
-                    placeholder="Amount"
-                  />
-                  <Select<ShippingBillFormValues>
-                    name={`invoices.${index}.commissionCurrency`}
-                    options={currencyOptions}
-                    placeholder={invoice.currency}
-                  />
-                </div>
-              </div>
-              <div className="p-2">
-                <div className="flex flex-wrap items-center gap-2 lg:flex-nowrap">
-                  <span className="w-28 shrink-0 font-medium text-gray-900">Discount</span>
-                  <div className="flex items-center gap-1">
-                    <Input
-                      type="number"
-                      {...register(`invoices.${index}.discountRate`)}
-                      className="text-right"
-                      disabled={invoiceValues.discountAmount !== '' && invoiceValues.discountAmount != null}
-                      placeholder="Rate"
-                    />
-                    <span className="text-xs text-gray-500">%</span>
-                  </div>
-                  <Input
-                    type="number"
-                    {...register(`invoices.${index}.discountAmount`)}
-                    className="py-1 text-right"
-                    disabled={invoiceValues.discountRate !== '' && invoiceValues.discountRate != null}
-                    placeholder="Amount"
-                  />
-                  <Select<ShippingBillFormValues>
-                    name={`invoices.${index}.discountCurrency`}
-                    options={currencyOptions}
-                    placeholder={invoice.currency}
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 divide-y divide-gray-100 lg:grid-cols-2 lg:divide-x lg:divide-y-0">
-              <div className="p-2">
-                <div className="flex flex-wrap items-center gap-2 lg:flex-nowrap">
-                  <span className="w-28 shrink-0 font-medium text-gray-900">Other Deductions</span>
-                  <div className="flex items-center gap-1">
-                    <Input
-                      type="number"
-                      {...register(`invoices.${index}.otherDeductionsRate`)}
-                      className="text-right"
-                      disabled={
-                        invoiceValues.otherDeductionsAmount !== '' && invoiceValues.otherDeductionsAmount != null
-                      }
-                      placeholder="Rate"
-                    />
-                    <span className="text-xs text-gray-500">%</span>
-                  </div>
-                  <Input
-                    type="number"
-                    {...register(`invoices.${index}.otherDeductionsAmount`)}
-                    className="py-1 text-right"
-                    disabled={invoiceValues.otherDeductionsRate !== '' && invoiceValues.otherDeductionsRate != null}
-                    placeholder="Amount"
-                  />
-                  <Select<ShippingBillFormValues>
-                    name={`invoices.${index}.otherDeductionsCurrency`}
-                    options={currencyOptions}
-                    placeholder={invoice.currency}
-                  />
-                </div>
-              </div>
-              <div className="p-2">
-                <div className="flex flex-wrap items-center gap-2 lg:flex-nowrap">
-                  <span className="w-28 shrink-0 font-medium text-gray-900">Packing Charges</span>
-                  <Input
-                    type="number"
-                    {...register(`invoices.${index}.packingCharges`)}
-                    className="py-1 text-right"
-                    placeholder="Amount"
-                  />
-                  <span className="w-14 text-sm text-gray-500">—</span>
-                </div>
-              </div>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="text-sm font-semibold text-gray-950">Charges & Deductions</h4>
+              <p className="text-xs text-gray-800">
+                Specify rate % or amount for freight, insurance, and other adjustments.
+              </p>
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Select<ShippingBillFormValues>
-              label="Price includes"
-              name={`invoices.${index}.freightInsuranceIncluded`}
-              options={priceInclusionTypes}
-              placeholder="Select if applicable"
-            />
-            <Input label="Contract / order number" {...register(`invoices.${index}.contractNumber`)} />
-            <Select<ShippingBillFormValues>
-              label="Payment type"
-              name={`invoices.${index}.natureOfPayment`}
-              options={paymentTypes}
-              placeholder="Select if applicable"
-            />
-            <Input label="Payment period (days)" type="number" {...register(`invoices.${index}.periodOfPayment`)} />
+          <div className="overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
+            <div className="grid grid-cols-1 divide-y divide-gray-200 lg:grid-cols-2 lg:divide-x lg:divide-y-0">
+              {/* Left Column: Freight, Commission, Other Deductions */}
+              <div className="divide-y divide-gray-200 p-2 sm:p-3">
+                {/* Freight */}
+                <div className="py-2.5">
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-gray-950">Freight</span>
+                    <span className="text-[11px] font-medium text-gray-800">Rate or Amount</span>
+                  </div>
+                  <div className="grid grid-cols-12 gap-2">
+                    <div className="col-span-4">
+                      <div className="relative">
+                        <Input
+                          type="number"
+                          {...register(`invoices.${index}.freightRate`)}
+                          className="pr-6 text-right"
+                          disabled={invoiceValues.freightAmount !== '' && invoiceValues.freightAmount != null}
+                          placeholder="Rate"
+                        />
+                        <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-xs font-semibold text-gray-800">
+                          %
+                        </span>
+                      </div>
+                    </div>
+                    <div className="col-span-5">
+                      <Input
+                        type="number"
+                        {...register(`invoices.${index}.freightAmount`)}
+                        className="text-right"
+                        disabled={invoiceValues.freightRate !== '' && invoiceValues.freightRate != null}
+                        placeholder="Amount"
+                      />
+                    </div>
+                    <div className="col-span-3">
+                      <Select<ShippingBillFormValues>
+                        name={`invoices.${index}.freightCurrency`}
+                        options={currencyOptions}
+                        placeholder={invoice.currency}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Commission */}
+                <div className="py-2.5">
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-gray-950">Commission</span>
+                    <span className="text-[11px] font-medium text-gray-800">Rate or Amount</span>
+                  </div>
+                  <div className="grid grid-cols-12 gap-2">
+                    <div className="col-span-4">
+                      <div className="relative">
+                        <Input
+                          type="number"
+                          {...register(`invoices.${index}.commissionRate`)}
+                          className="pr-6 text-right"
+                          disabled={invoiceValues.commissionAmount !== '' && invoiceValues.commissionAmount != null}
+                          placeholder="Rate"
+                        />
+                        <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-xs font-semibold text-gray-800">
+                          %
+                        </span>
+                      </div>
+                    </div>
+                    <div className="col-span-5">
+                      <Input
+                        type="number"
+                        {...register(`invoices.${index}.commissionAmount`)}
+                        className="text-right"
+                        disabled={invoiceValues.commissionRate !== '' && invoiceValues.commissionRate != null}
+                        placeholder="Amount"
+                      />
+                    </div>
+                    <div className="col-span-3">
+                      <Select<ShippingBillFormValues>
+                        name={`invoices.${index}.commissionCurrency`}
+                        options={currencyOptions}
+                        placeholder={invoice.currency}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Other Deductions */}
+                <div className="pt-2.5">
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-gray-950">Other Deductions</span>
+                    <span className="text-[11px] font-medium text-gray-800">Rate or Amount</span>
+                  </div>
+                  <div className="grid grid-cols-12 gap-2">
+                    <div className="col-span-4">
+                      <div className="relative">
+                        <Input
+                          type="number"
+                          {...register(`invoices.${index}.otherDeductionsRate`)}
+                          className="pr-6 text-right"
+                          disabled={
+                            invoiceValues.otherDeductionsAmount !== '' && invoiceValues.otherDeductionsAmount != null
+                          }
+                          placeholder="Rate"
+                        />
+                        <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-xs font-semibold text-gray-800">
+                          %
+                        </span>
+                      </div>
+                    </div>
+                    <div className="col-span-5">
+                      <Input
+                        type="number"
+                        {...register(`invoices.${index}.otherDeductionsAmount`)}
+                        className="text-right"
+                        disabled={invoiceValues.otherDeductionsRate !== '' && invoiceValues.otherDeductionsRate != null}
+                        placeholder="Amount"
+                      />
+                    </div>
+                    <div className="col-span-3">
+                      <Select<ShippingBillFormValues>
+                        name={`invoices.${index}.otherDeductionsCurrency`}
+                        options={currencyOptions}
+                        placeholder={invoice.currency}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Insurance, Discount, Packing Charges */}
+              <div className="divide-y divide-gray-200 p-2 sm:p-3">
+                {/* Insurance */}
+                <div className="py-2.5">
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-gray-950">Insurance</span>
+                    <span className="text-[11px] font-medium text-gray-800">Rate or Amount</span>
+                  </div>
+                  <div className="grid grid-cols-12 gap-2">
+                    <div className="col-span-4">
+                      <div className="relative">
+                        <Input
+                          type="number"
+                          {...register(`invoices.${index}.insuranceRate`)}
+                          className="pr-6 text-right"
+                          disabled={invoiceValues.insuranceAmount !== '' && invoiceValues.insuranceAmount != null}
+                          placeholder="Rate"
+                        />
+                        <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-xs font-semibold text-gray-800">
+                          %
+                        </span>
+                      </div>
+                    </div>
+                    <div className="col-span-5">
+                      <Input
+                        type="number"
+                        {...register(`invoices.${index}.insuranceAmount`)}
+                        className="text-right"
+                        disabled={invoiceValues.insuranceRate !== '' && invoiceValues.insuranceRate != null}
+                        placeholder="Amount"
+                      />
+                    </div>
+                    <div className="col-span-3">
+                      <Select<ShippingBillFormValues>
+                        name={`invoices.${index}.insuranceCurrency`}
+                        options={currencyOptions}
+                        placeholder={invoice.currency}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Discount */}
+                <div className="py-2.5">
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-gray-950">Discount</span>
+                    <span className="text-[11px] font-medium text-gray-800">Rate or Amount</span>
+                  </div>
+                  <div className="grid grid-cols-12 gap-2">
+                    <div className="col-span-4">
+                      <div className="relative">
+                        <Input
+                          type="number"
+                          {...register(`invoices.${index}.discountRate`)}
+                          className="pr-6 text-right"
+                          disabled={invoiceValues.discountAmount !== '' && invoiceValues.discountAmount != null}
+                          placeholder="Rate"
+                        />
+                        <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-xs font-semibold text-gray-800">
+                          %
+                        </span>
+                      </div>
+                    </div>
+                    <div className="col-span-5">
+                      <Input
+                        type="number"
+                        {...register(`invoices.${index}.discountAmount`)}
+                        className="text-right"
+                        disabled={invoiceValues.discountRate !== '' && invoiceValues.discountRate != null}
+                        placeholder="Amount"
+                      />
+                    </div>
+                    <div className="col-span-3">
+                      <Select<ShippingBillFormValues>
+                        name={`invoices.${index}.discountCurrency`}
+                        options={currencyOptions}
+                        placeholder={invoice.currency}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Packing Charges */}
+                <div className="pt-2.5">
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-gray-950">Packing Charges</span>
+                    <span className="text-[11px] font-medium text-gray-800">Flat Amount</span>
+                  </div>
+                  <div className="grid grid-cols-12 gap-2">
+                    <div className="col-span-9">
+                      <Input
+                        type="number"
+                        {...register(`invoices.${index}.packingCharges`)}
+                        className="text-right"
+                        placeholder="Amount"
+                      />
+                    </div>
+                    <div className="col-span-3 flex items-center justify-center">
+                      <span className="text-xs font-semibold text-gray-800">{invoice.currency || 'USD'}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <PartyFields
-            formCtx={formCtx}
-            ownerName={`invoices.${index}.thirdPartyId`}
-            branchName={`invoices.${index}.thirdPartyBranchId`}
-            label="Third party (optional)"
-            kind="business"
-            parties={thirdPartyOptions}
-            required={false}
-            onQuickAdd={() => onQuickAdd('thirdParty', index)}
-            onAddBranch={(ownerId) => onAddBranch(ownerId, `invoices.${index}.thirdPartyBranchId`)}
-          />
         </div>
 
-        <div className="border-t border-gray-200 pt-5">
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <SectionHeading title="Goods" />
-            <Button size="sm" variant="outline" onClick={() => addItem(emptyItem())}>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Select<ShippingBillFormValues>
+            label="Price includes"
+            name={`invoices.${index}.freightInsuranceIncluded`}
+            options={priceInclusionTypes}
+            placeholder="Select if applicable"
+          />
+          <Input label="Contract / order number" {...register(`invoices.${index}.contractNumber`)} />
+          <Select<ShippingBillFormValues>
+            label="Payment type"
+            name={`invoices.${index}.natureOfPayment`}
+            options={paymentTypes}
+            placeholder="Select if applicable"
+          />
+          <Input label="Payment period (days)" type="number" {...register(`invoices.${index}.periodOfPayment`)} />
+        </div>
+        <PartyFields
+          formCtx={formCtx}
+          ownerName={`invoices.${index}.thirdPartyId`}
+          branchName={`invoices.${index}.thirdPartyBranchId`}
+          label="Third party (optional)"
+          kind="business"
+          parties={thirdPartyOptions}
+          required={false}
+          onQuickAdd={() => onQuickAdd('thirdParty', index)}
+          onAddBranch={(ownerId) => onAddBranch(ownerId, `invoices.${index}.thirdPartyBranchId`)}
+        />
+
+        <div className="border-t border-gray-200 pt-6">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 className="text-base font-bold text-gray-950">Goods & Line Items ({items.length})</h3>
+              <p className="text-xs font-medium text-gray-800">
+                HS code classification, quantity, unit price, and customs schemes for each product.
+              </p>
+            </div>
+            <Button size="sm" type="button" variant="outline" onClick={() => addItem(emptyItem())}>
               + Add item
             </Button>
           </div>
@@ -732,12 +840,24 @@ function InvoiceEditor({
             {items.map((field, itemIndex) => {
               const item = invoice.items[itemIndex] ?? emptyItem()
               return (
-                <div key={field.id} className="rounded-lg border border-gray-200 p-4">
+                <div key={field.id} className="rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all">
                   <div className="mb-3 flex items-center justify-between">
-                    <h4 className="text-sm font-semibold">Item {itemIndex + 1}</h4>
+                    <div className="flex items-center gap-2">
+                      <span className="bg-primary-600 flex size-6 items-center justify-center rounded-md text-xs font-bold text-white shadow-xs">
+                        {itemIndex + 1}
+                      </span>
+                      <h4 className="text-sm font-bold text-gray-950">
+                        Item {itemIndex + 1} {item.goodsDescription1 ? `— ${item.goodsDescription1.slice(0, 30)}` : ''}
+                      </h4>
+                    </div>
                     {items.length > 1 && (
-                      <Button size="sm" variant="ghost" onClick={() => removeItem(itemIndex)}>
-                        Remove
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        type="button"
+                        className="text-xs text-red-600 hover:bg-red-50 hover:text-red-700"
+                        onClick={() => removeItem(itemIndex)}>
+                        Remove item
                       </Button>
                     )}
                   </div>
@@ -973,16 +1093,16 @@ function DocumentItem({ formCtx, index, onRemove }: { formCtx: BillFormContext; 
   const [showCustomDetails, setShowCustomDetails] = useState(hasCustomValues)
 
   return (
-    <div className="space-y-3 rounded-lg border border-gray-200 bg-white p-3">
+    <div className="space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
       <div className="mb-1 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-900">Document {index + 1}</h3>
+        <h3 className="text-sm font-semibold text-gray-950">Document {index + 1}</h3>
         <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={onRemove}>
           Remove
         </Button>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <div>
-          <span className="mb-1 block text-sm font-medium text-gray-700">Document type code</span>
+          <span className="mb-1 block text-sm font-medium text-gray-800">Document type code</span>
           <AsyncPartySelect
             name={`documents.${index}.documentTypeCode`}
             placeholder="Search document type..."
@@ -1015,7 +1135,7 @@ function DocumentItem({ formCtx, index, onRemove }: { formCtx: BillFormContext; 
           <Input label="Invoice serial number" type="number" {...register(`documents.${index}.invoiceSerialNumber`)} />
           <Input label="Item serial number" type="number" {...register(`documents.${index}.itemSerialNumber`)} />
           <div>
-            <span className="mb-1 block text-sm font-medium text-gray-700">File type</span>
+            <span className="mb-1 block text-sm font-medium text-gray-800">File type</span>
             <AsyncPartySelect
               name={`documents.${index}.fileType`}
               placeholder="Search file type..."
@@ -1040,7 +1160,7 @@ function DocumentItem({ formCtx, index, onRemove }: { formCtx: BillFormContext; 
           <Advanced title="Issuing & Beneficiary">
             <div className="flex flex-col gap-6 pt-2">
               <div>
-                <h3 className="mb-3 text-sm font-semibold text-gray-900">Issuing Details</h3>
+                <h3 className="mb-3 text-sm font-semibold text-gray-950">Issuing Details</h3>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   <Input label="Issuing party code" {...register(`documents.${index}.issuingPartyCode`)} />
                   <Input label="Issuing party name" {...register(`documents.${index}.issuingPartyName`)} />
@@ -1052,7 +1172,7 @@ function DocumentItem({ formCtx, index, onRemove }: { formCtx: BillFormContext; 
               </div>
 
               <div className="border-t border-gray-100 pt-5">
-                <h3 className="mb-3 text-sm font-semibold text-gray-900">Beneficiary Details</h3>
+                <h3 className="mb-3 text-sm font-semibold text-gray-950">Beneficiary Details</h3>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   <Input label="Beneficiary code" {...register(`documents.${index}.beneficiaryPartyCode`)} />
                   <Input label="Beneficiary name" {...register(`documents.${index}.beneficiaryPartyName`)} />
@@ -1092,6 +1212,7 @@ function BillEditor({ bill }: { bill?: SavedBill }) {
     draftId,
     setDraftId
   } = useShippingBillForm(bill)
+  const { register } = formCtx.hooks
   const [quickAdd, setQuickAdd] = useState<QuickAdd | null>(null)
   const [quickBranch, setQuickBranch] = useState<QuickBranch | null>(null)
   const { options: marksAndNumbersOptions, isLoading: marksAndNumbersLoading } = useMarksAndNumbers(
@@ -1150,45 +1271,91 @@ function BillEditor({ bill }: { bill?: SavedBill }) {
   }
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <button className="mb-2 text-sm text-gray-500 hover:underline" onClick={() => navigate(routes.dashboard)}>
-            ← Shipping bills
-          </button>
-          <h1 className="text-2xl font-semibold text-gray-950">
-            {bill ? `Edit shipping bill #${bill.id}` : 'New shipping bill'}
-          </h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Enter the everyday details first. Open advanced sections only when needed.
-          </p>
+    <div className="space-y-6">
+      <div className="space-y-1">
+        <button
+          type="button"
+          className="group mb-1 inline-flex items-center gap-1.5 text-xs font-semibold text-gray-800 transition-colors hover:text-gray-950"
+          onClick={() => navigate(routes.dashboard)}>
+          <span className="transition-transform group-hover:-translate-x-0.5">←</span> Back to Shipping bills
+        </button>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-gray-950">
+              {bill ? `Edit shipping bill #${bill.id}` : 'New shipping bill'}
+            </h1>
+            <p className="mt-1 text-sm font-medium text-gray-800">
+              Enter the everyday details first. Open advanced sections only when needed.
+            </p>
+          </div>
+          {bill && (
+            <div className="flex items-center gap-2">
+              <span className="rounded-full border border-emerald-500/30 bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-500">
+                Draft #{bill.values.jobNumber || bill.id}
+              </span>
+            </div>
+          )}
         </div>
       </div>
-      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {workflowSteps.map((step, index) => {
           const isShippingBill = step.id === 'shipping-bill'
           return (
             <div
               key={step.id}
-              className={`rounded-lg border p-3 ${isShippingBill
-                ? 'border-primary-300 bg-primary-50'
-                : 'border-gray-200 bg-gray-50'
-                }`}>
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <span className="flex size-6 items-center justify-center rounded-full bg-white text-xs">{index + 1}</span>
-                {step.title}
+              className={clsx(
+                'relative flex flex-col justify-between rounded-xl border p-3.5 transition-all',
+                isShippingBill
+                  ? 'border-primary-500 bg-primary-500/15 ring-primary-500/30 shadow-xs ring-1'
+                  : 'border-gray-200 bg-gray-50'
+              )}>
+              <div className="flex items-center gap-2.5">
+                <span
+                  className={clsx(
+                    'flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold',
+                    isShippingBill
+                      ? 'bg-primary-600 text-white shadow-xs'
+                      : 'border border-gray-300 bg-gray-100 text-gray-950'
+                  )}>
+                  {index + 1}
+                </span>
+                <span
+                  className={clsx(
+                    'text-sm font-bold tracking-tight',
+                    isShippingBill ? 'text-primary-400' : 'text-gray-950'
+                  )}>
+                  {step.title}
+                </span>
               </div>
-              <p className="ml-8 text-xs text-gray-500">{step.description}</p>
+              <p
+                className={clsx(
+                  'mt-1.5 ml-8.5 text-xs font-medium',
+                  isShippingBill ? 'text-primary-300' : 'text-gray-800'
+                )}>
+                {step.description}
+              </p>
             </div>
           )
         })}
       </div>
-      <Form ctx={formCtx} handleSubmit={handleSave} className="space-y-5">
+      <Form ctx={formCtx} handleSubmit={handleSave} className="space-y-6">
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(String(value))}>
-          <TabsList className="flex w-full justify-start overflow-x-auto">
-            <TabsTrigger value="details">1. Details</TabsTrigger>
-            <TabsTrigger value="invoices">2. Invoices & goods</TabsTrigger>
-            <TabsTrigger value="documents">3. Others</TabsTrigger>
+          <TabsList className="flex w-full justify-start gap-1 overflow-x-auto rounded-xl border border-gray-200 bg-gray-50 p-1.5">
+            <TabsTrigger
+              value="details"
+              className="rounded-lg px-4 py-2 text-sm font-semibold transition-all hover:text-gray-950 aria-[selected=false]:text-gray-800 aria-[selected=true]:bg-white aria-[selected=true]:text-gray-950 aria-[selected=true]:shadow-xs dark:aria-[selected=true]:bg-gray-200">
+              1. Details
+            </TabsTrigger>
+            <TabsTrigger
+              value="invoices"
+              className="rounded-lg px-4 py-2 text-sm font-semibold transition-all hover:text-gray-950 aria-[selected=false]:text-gray-800 aria-[selected=true]:bg-white aria-[selected=true]:text-gray-950 aria-[selected=true]:shadow-xs dark:aria-[selected=true]:bg-gray-200">
+              2. Invoices & goods
+            </TabsTrigger>
+            <TabsTrigger
+              value="documents"
+              className="rounded-lg px-4 py-2 text-sm font-semibold transition-all hover:text-gray-950 aria-[selected=false]:text-gray-800 aria-[selected=true]:bg-white aria-[selected=true]:text-gray-950 aria-[selected=true]:shadow-xs dark:aria-[selected=true]:bg-gray-200">
+              3. Others
+            </TabsTrigger>
           </TabsList>
 
           <PersistentTab value="details" activeTab={activeTab} className="space-y-4">
@@ -1264,7 +1431,7 @@ function BillEditor({ bill }: { bill?: SavedBill }) {
                       />
                     </div>
                   </div>
-                  <p className="mt-3 text-xs text-gray-500">
+                  <p className="mt-3 text-xs text-gray-800">
                     Countries are derived from the port codes when saved: {portCountry(values.loadingPort) || '—'} →{' '}
                     {portCountry(values.finalDestinationPort) || '—'}.
                   </p>
@@ -1350,12 +1517,19 @@ function BillEditor({ bill }: { bill?: SavedBill }) {
           </PersistentTab>
 
           <PersistentTab value="invoices" activeTab={activeTab} className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
               <div>
-                <h2 className="font-semibold">Invoices & goods</h2>
-                <p className="text-sm text-gray-500">One invoice and one item are ready to fill in.</p>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-bold tracking-tight text-gray-950">Invoices & goods</h2>
+                  <span className="bg-primary-600 rounded-full px-2.5 py-0.5 text-xs font-bold text-white shadow-xs">
+                    {invoices.length} {invoices.length === 1 ? 'Invoice' : 'Invoices'}
+                  </span>
+                </div>
+                <p className="mt-0.5 text-xs font-medium text-gray-800">
+                  Manage commercial invoices and item-level export details.
+                </p>
               </div>
-              <Button variant="outline" onClick={() => addInvoice(emptyInvoice())}>
+              <Button type="button" className="shadow-xs" onClick={() => addInvoice(emptyInvoice())}>
                 + Add invoice
               </Button>
             </div>
@@ -1474,7 +1648,7 @@ function BillEditor({ bill }: { bill?: SavedBill }) {
               <CardHeader className="flex-row items-start justify-between gap-3">
                 <div>
                   <h3 className="font-semibold text-gray-950">Supporting documents</h3>
-                  <p className="mt-1 text-sm text-gray-500">Add references when required for this shipment.</p>
+                  <p className="mt-1 text-sm text-gray-800">Add references when required for this shipment.</p>
                 </div>
                 {documents.length > 0 && (
                   <Button variant="outline" size="sm" onClick={() => addDocument(emptyDocument())}>
@@ -1497,7 +1671,7 @@ function BillEditor({ bill }: { bill?: SavedBill }) {
               <CardHeader className="flex-row items-start justify-between gap-3">
                 <div>
                   <h3 className="font-semibold text-gray-950">Licences</h3>
-                  <p className="mt-1 text-sm text-gray-500">Only enter these for schemes that require a licence.</p>
+                  <p className="mt-1 text-sm text-gray-800">Only enter these for schemes that require a licence.</p>
                 </div>
                 {licenses.length > 0 && (
                   <Button variant="outline" size="sm" onClick={() => addLicense({ registrationNumber: '' })}>
@@ -1569,11 +1743,11 @@ function BillEditor({ bill }: { bill?: SavedBill }) {
             </Card>
           </PersistentTab>
         </Tabs>
-        <div className="flex flex-wrap justify-between gap-2 border-t border-gray-200 pt-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-200 pt-5">
           <Button variant="outline" type="button" onClick={() => navigate(routes.dashboard)}>
             Cancel
           </Button>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2.5">
             {activeTab !== 'details' && (
               <Button
                 variant="outline"
@@ -1584,12 +1758,13 @@ function BillEditor({ bill }: { bill?: SavedBill }) {
                   setDraftId(saved.id)
                   setActiveTab(activeTab === 'documents' ? 'invoices' : 'details')
                 }}>
-                Previous
+                ← Previous
               </Button>
             )}
             {activeTab !== 'documents' ? (
               <Button
                 type="button"
+                className="shadow-xs"
                 onClick={(e) => {
                   e.preventDefault()
                   const current = formCtx.hooks.getValues()
@@ -1598,10 +1773,10 @@ function BillEditor({ bill }: { bill?: SavedBill }) {
                   toast.success('Details saved')
                   setActiveTab(activeTab === 'details' ? 'invoices' : 'documents')
                 }}>
-                Save & Next
+                Save & Next →
               </Button>
             ) : (
-              <Button type="submit">
+              <Button type="submit" className="shadow-xs">
                 Save changes
               </Button>
             )}
@@ -1637,7 +1812,7 @@ function BillEditor({ bill }: { bill?: SavedBill }) {
 export default function ShippingBillPage() {
   const { id } = useParams<{ id?: string }>()
   const { bills } = useDemoData()
-  const bill = id ? (bills.find((item) => item.id === Number(id)) || shippingBillService.getById(id)) : undefined
+  const bill = id ? bills.find((item) => item.id === Number(id)) || shippingBillService.getById(id) : undefined
   if (id && !bill)
     return (
       <div className="space-y-3">

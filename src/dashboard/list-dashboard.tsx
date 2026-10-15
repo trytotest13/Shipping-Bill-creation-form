@@ -73,20 +73,16 @@ export default function ListDashboard() {
       return (isNaN(timeB) ? 0 : timeB) - (isNaN(timeA) ? 0 : timeA)
     })
 
-  const uniqueExportersCount = new Set(
-    bills.map((b) => b.values.exporterName).filter(Boolean)
-  ).size
+  const uniqueExportersCount = new Set(bills.map((b) => b.values.exporterName).filter(Boolean)).size
 
-  const uniqueConsigneesCount = new Set(
-    bills.map((b) => b.values.consigneeName).filter(Boolean)
-  ).size
+  const uniqueConsigneesCount = new Set(bills.map((b) => b.values.consigneeName).filter(Boolean)).size
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-gray-950">Shipping bills</h1>
-          <p className="mt-1 text-sm text-gray-500">Create and continue the shipping bill step of each export job.</p>
+          <p className="mt-1 text-sm text-gray-800">Create and continue the shipping bill step of each export job.</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={fetchBills} disabled={isLoading}>
@@ -99,19 +95,19 @@ export default function ListDashboard() {
       <div className="grid gap-3 sm:grid-cols-3">
         <Card>
           <CardContent className="pt-5">
-            <p className="text-xs text-gray-500">Shipping bills</p>
+            <p className="text-xs font-medium text-gray-800">Shipping bills</p>
             <p className="mt-1 text-2xl font-semibold">{bills.length}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-5">
-            <p className="text-xs text-gray-500">Exporters</p>
+            <p className="text-xs font-medium text-gray-800">Exporters</p>
             <p className="mt-1 text-2xl font-semibold">{uniqueExportersCount || 1}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-5">
-            <p className="text-xs text-gray-500">Businesses / Consignees</p>
+            <p className="text-xs font-medium text-gray-800">Businesses / Consignees</p>
             <p className="mt-1 text-2xl font-semibold">{uniqueConsigneesCount || 1}</p>
           </CardContent>
         </Card>
@@ -128,7 +124,7 @@ export default function ListDashboard() {
                 placeholder="Job, invoice, exporter or consignee"
               />
             </div>
-            <span className="text-sm text-gray-500">
+            <span className="text-sm font-medium text-gray-800">
               {filtered.length} {filtered.length === 1 ? 'bill' : 'bills'}
             </span>
           </div>
@@ -154,25 +150,29 @@ export default function ListDashboard() {
                     <tr key={bill.id}>
                       <td className="font-medium">
                         {bill.values.jobNumber ? `#${bill.values.jobNumber}` : `Bill #${bill.id}`}
-                        <span className="block text-xs font-normal text-gray-500">{bill.values.jobDate}</span>
+                        <span className="block text-xs font-normal text-gray-800">{bill.values.jobDate}</span>
                       </td>
                       <td>
                         {exporterName}
-                        <span className="block text-xs text-gray-500">to {consigneeName}</span>
+                        <span className="block text-xs text-gray-800">to {consigneeName}</span>
                       </td>
                       <td>
                         {bill.values.loadingPort || '—'} → {bill.values.finalDestinationPort || '—'}
                       </td>
                       <td>
                         {bill.values.invoices.length}
-                        <span className="block text-xs text-gray-500">
+                        <span className="block text-xs text-gray-800">
                           {total.toLocaleString(undefined, { maximumFractionDigits: 2 })} across items
                         </span>
                       </td>
                       <td>
                         <Badge variant="secondary">Draft</Badge>
                       </td>
-                      <td>{bill.updated && !isNaN(new Date(bill.updated).getTime()) ? new Date(bill.updated).toLocaleDateString() : '—'}</td>
+                      <td>
+                        {bill.updated && !isNaN(new Date(bill.updated).getTime())
+                          ? new Date(bill.updated).toLocaleDateString()
+                          : '—'}
+                      </td>
                       <td className="text-right">
                         <div className="flex items-center justify-end gap-2">
                           <Button
@@ -198,7 +198,7 @@ export default function ListDashboard() {
           ) : (
             <div className="rounded-lg border border-dashed border-gray-300 p-10 text-center">
               <p className="font-medium">{search ? 'No matching shipping bills' : 'No shipping bills yet'}</p>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-gray-800">
                 {search ? 'Try another job number or party name.' : 'Create a bill to start an export job.'}
               </p>
               {!search && (
