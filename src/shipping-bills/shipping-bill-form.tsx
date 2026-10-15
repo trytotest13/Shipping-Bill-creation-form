@@ -8,12 +8,13 @@ import { BranchDialog, PartyDialog } from './party-dialogs'
 import { BillFormContext, useShippingBillForm } from './hooks/use-shipping-bill-form'
 import { useMarksAndNumbers } from './hooks/use-marks-and-numbers'
 import { routes } from '@/shared/route-paths'
-import { Form, SubmitButton } from 'core/form/components'
+import { Form } from 'core/form/components'
 import { navigate, useParams } from 'core/routing'
 import { toast } from 'core/toast-manager'
 import { RrCaretDown } from 'icons/rr/fi-rr-caret-down'
 import { useState } from 'react'
 import { getFormContext, RegisterOptions, useController } from 'ui/form'
+import type { Path } from 'ui/form'
 import { Button } from 'ui/basic/button'
 import { Card, CardContent, CardHeader } from 'ui/basic/card'
 import { Checkbox } from 'ui/inputs/checkbox'
@@ -1148,10 +1149,6 @@ function BillEditor({ bill }: { bill?: SavedBill }) {
     }
   }
 
-  const exporter = exporters.find((item) => String(item.id) === values.exporterId)
-  const consignee = businesses.find((item) => String(item.id) === values.consigneeId)
-  const totalLines = values.invoices.reduce((sum, invoice) => sum + invoice.items.length, 0)
-
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -1626,7 +1623,11 @@ function BillEditor({ bill }: { bill?: SavedBill }) {
           kind={quickBranch.kind}
           ownerId={quickBranch.ownerId}
           onClose={() => setQuickBranch(null)}
-          onSaved={(branch: Branch) => setValue(quickBranch.branchName, String(branch.id), { shouldValidate: true })}
+          onSaved={(branch: Branch) =>
+            setValue(quickBranch.branchName as Path<ShippingBillFormValues>, String(branch.id), {
+              shouldValidate: true
+            })
+          }
         />
       )}
     </div>
