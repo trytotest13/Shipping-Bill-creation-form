@@ -34,18 +34,20 @@ src/
       saved-bill.ts   — SavedBill
       index.ts        — barrel
     schema.ts         — billSchema + positive (core/form `s`)
-    options.ts        — select option constants + inputDateType (single place for the ui/inputs date-type workaround)
+    input-date-type.ts — the single ui/inputs date-type workaround
     workflow.ts       — workflowSteps
     hooks/
       use-shipping-bill-form.ts (useForm shell + activeTab/draftId + error-tab routing)
       use-save-shipping-bill.ts (save pipeline: local save → best-effort API sync → toast → navigate)
       use-marks-and-numbers.ts (cancellable fetch by exporterId)
+      use-form-options.ts (one shared cached load of all fixed option lists)
     services/
       api-client.ts             — BASE_URL, headers, apiRequest()
       shipping-bill-mapper.ts   — toHttpShippingBillPayload + normalizeApiBill(s) (typed parsers, unknown-safe)
       flat-file.ts              — ICEGATE .sb generator + blob download helpers
       api-seed.ts               — API-shaped seed rows for offline fallback
       shipping-bill-service.ts  — thin facade (list/getById/upsert/getFlatFile/downloadFlatFile)
+      form-options-service.ts   — async source of every fixed option list (no component imports hardcoded arrays)
       party-mock-service.ts     — async party/port lookups over demo-store
       marks-and-numbers-source.ts
     store/
@@ -71,7 +73,7 @@ src/
 
 ## 2. Layering Rules
 
-- `model/`, `schema.ts`, `options.ts`, `store/`, `services/`, `data/` — no React components; pure types, derivations and I/O.
+- `model/`, `schema.ts`, `store/`, `services/`, `data/` — no React components; pure types, derivations and I/O.
 - `components/` — only React component exports (react-refresh/HMR rule enforced by eslint).
 - Components never import fetch/localStorage directly; they call hooks and services. Section components own their `useFieldArray` so the orchestrator stays small and sections are independently reusable.
 - `AsyncSearchSelect`/`PartyFields`/`Disclosure` etc. are generic — they take paths and callbacks, not bill-specific knowledge.
@@ -95,7 +97,7 @@ Masters: demo-store snapshot -> selects; quick-add dialogs -> saveParty/saveBran
 ## 4. Rendering Strategy
 
 - Client-only SPA (Vite). Routes via `core/routing`: dashboard eager, shipping-bill page lazy-imported from `components/shipping-bill-page`.
-- HMR: every component file exports only components; constants live in `options.ts`/`data/`; types are type-only exports.
+- HMR: every component file exports only components; option data lives in `services/form-options-service.ts`; types are type-only exports.
 - `PersistentTab` keeps all tabs mounted (hidden) so submit validates the entire bill; section components render inside their panel.
 - Build chunking preserved: `manualChunks` (v/react, v/form, v/fetch, v/popover, v/err-obs); the page is its own lazy chunk.
 

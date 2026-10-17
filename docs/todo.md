@@ -1,15 +1,12 @@
 # Todo — Live Tracker (update after EVERY task; instruction: move next to [/], done to [x])
 
 ## [/] In Progress
-
 - (none)
 
 ## [ ] Todo (Phase 4)
-
 - [ ] T4.5 Deploy updated build to Vercel + final re-submission
 
 ## [x] Done
-
 - [x] T4.1 Error-state audit (async-search-select gains loading/empty/error states; flat-file + list/save failures typed via shared/errors.ts; no silent catch regressions)
 - [x] T4.2 A11y + lint pass: ESLint 159 → 0 errors (strictTypeChecked incl. prefer-nullish/no-unnecessary-condition/no-base-to-string), tsc --incremental clean, prettier clean (pnpm lint-check exit 0)
 - [x] T4.3 Decomposition completed (Phase 3 remainder + dashboard): monolith shipping-bill-form.tsx (1816 lines) deleted; components/ tree built (see docs/architecture.md); dashboard split into bill-filters/bills-table/stat-cards; model→model/ folder; service split into api-client + mapper + flat-file + api-seed + facade; demo-store split demo-seed; party-dialogs split into party-dialog + branch-dialog; options.ts centralizes select constants + inputDateType workaround
@@ -27,3 +24,4 @@
 - [x] T1.3 Freeze inventory (src 23 files; monolith shipping-bill-form.tsx 1702 lines/77541B; model 504/18822; demo-store 636/18329; service 452/24032; party-dialogs 289/12665; internal fns: SectionHeading, Advanced, PersistentTab, AsyncPartySelect, PopoverOptionItem, PartyFields, InvoiceEditor, DocumentItem, BillEditor, ShippingBillPage; billSchema 30 leaf rules incl. positive qty/unitPrice)
 - [x] T1.2 Submodule + pnpm install + dev/lint baseline (fe-zen-arch-ref @4c461ba matches pinned submodule; starter cloned locally (gitignored); pnpm install 556 pkgs OK; vite 8.3.1 OK; lint.sh is bash-only so ran prettier check (132 files need --write, line-ending noise) + tsc timed out on first pass — retry in T4.4)
 - [x] T1.1 Git init + .gitignore + .env.example + verify (commit 4e3cf15, 10 files, no .env tracked, .env.example committed)
+- [x] T4.6 Mock-service compliance (assignment PDF): all static option lists moved behind async form-options-service + shared useFormOptions hook; zero hardcoded array imports in components; README gained required "AI Usage & Approach" section; fixed render loop found in browser verification (unstable setValue dep in DetailsSection)
