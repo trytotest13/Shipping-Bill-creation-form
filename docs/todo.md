@@ -1,12 +1,15 @@
 # Todo — Live Tracker (update after EVERY task; instruction: move next to [/], done to [x])
 
 ## [/] In Progress
+
 - (none)
 
 ## [ ] Todo (Phase 4)
+
 - [ ] T4.5 Deploy updated build to Vercel + final re-submission
 
 ## [x] Done
+
 - [x] T4.1 Error-state audit (async-search-select gains loading/empty/error states; flat-file + list/save failures typed via shared/errors.ts; no silent catch regressions)
 - [x] T4.2 A11y + lint pass: ESLint 159 → 0 errors (strictTypeChecked incl. prefer-nullish/no-unnecessary-condition/no-base-to-string), tsc --incremental clean, prettier clean (pnpm lint-check exit 0)
 - [x] T4.3 Decomposition completed (Phase 3 remainder + dashboard): monolith shipping-bill-form.tsx (1816 lines) deleted; components/ tree built (see docs/architecture.md); dashboard split into bill-filters/bills-table/stat-cards; model→model/ folder; service split into api-client + mapper + flat-file + api-seed + facade; demo-store split demo-seed; party-dialogs split into party-dialog + branch-dialog; options.ts centralizes select constants + inputDateType workaround

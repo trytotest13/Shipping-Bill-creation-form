@@ -1,8 +1,8 @@
 import { getFormContext } from 'ui/form'
 import { Input } from 'ui/inputs/input'
 import { Select } from 'ui/inputs/select'
+import { useFormOptions } from '../hooks/use-form-options'
 import type { BillInvoiceForm, ShippingBillFormValues } from '../model'
-import { currencyOptions } from '../options'
 
 type FormRegister = ReturnType<typeof getFormContext>['hooks']['register']
 
@@ -14,6 +14,7 @@ interface ChargeRowProps {
   basePath: `invoices.${number}`
   field: ChargeKey
   currencyPlaceholder: string
+  currencyOptions: { value: string | number; label: string }[]
   rateValue?: string
   amountValue?: string
   register: FormRegister
@@ -26,6 +27,7 @@ function ChargeRow({
   basePath,
   field,
   currencyPlaceholder,
+  currencyOptions,
   rateValue,
   amountValue,
   register
@@ -124,6 +126,8 @@ export interface InvoiceChargesProps {
 // Freight, insurance, commission, discount, other deductions and packing charges for one invoice.
 export function InvoiceCharges({ basePath, invoice }: InvoiceChargesProps) {
   const { register } = getFormContext().hooks
+  const { options } = useFormOptions()
+  const currencyOptions = options?.currencies ?? []
 
   function renderCharge(charge: { key: ChargeKey; label: string }) {
     return (
@@ -134,6 +138,7 @@ export function InvoiceCharges({ basePath, invoice }: InvoiceChargesProps) {
         basePath={basePath}
         field={charge.key}
         currencyPlaceholder={invoice.currency}
+        currencyOptions={currencyOptions}
         rateValue={invoice[`${charge.key}Rate`]}
         amountValue={invoice[`${charge.key}Amount`]}
         register={register}

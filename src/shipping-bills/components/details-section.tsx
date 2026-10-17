@@ -1,12 +1,11 @@
-import { stateOptions } from '@/data/states'
-import { cargoOptions, sealTypes, weightUnits } from '@/data/types'
 import { Card, CardContent, CardHeader } from 'ui/basic/card'
 import { getFormContext } from 'ui/form'
 import { Input } from 'ui/inputs/input'
 import { Select } from 'ui/inputs/select'
+import { useFormOptions } from '../hooks/use-form-options'
 import { useMarksAndNumbers } from '../hooks/use-marks-and-numbers'
+import { inputDateType } from '../input-date-type'
 import { portCountry, ShippingBillFormValues } from '../model'
-import { inputDateType, nfeiCategoryOptions, portOptions } from '../options'
 import { partyMockService } from '../services/party-mock-service'
 import { useDemoData } from '../store/demo-store'
 import { AsyncSearchSelect } from './async-search-select'
@@ -21,7 +20,8 @@ interface DetailsSectionProps {
 
 // Tab 1: parties, route, regulatory exceptions and package details.
 export function DetailsSection({ onQuickAdd, onAddBranch }: DetailsSectionProps) {
-  const { register, watch } = getFormContext().hooks
+  const { register, watch, setValue } = getFormContext().hooks
+  const { options } = useFormOptions()
   const { exporters, businesses } = useDemoData()
   const exporterId = watch('exporterId')
   const consigneeId = watch('consigneeId')
@@ -30,7 +30,7 @@ export function DetailsSection({ onQuickAdd, onAddBranch }: DetailsSectionProps)
   const numberOfContainers = watch('containers')
   const { options: marksAndNumbersOptions, isLoading: marksAndNumbersLoading } = useMarksAndNumbers(
     exporterId,
-    (name, value) => getFormContext().hooks.setValue(name, value, { shouldValidate: true })
+    setValue
   )
   const consigneeOptions = businesses.filter((business) => business.isConsignee || String(business.id) === consigneeId)
 
@@ -111,20 +111,20 @@ export function DetailsSection({ onQuickAdd, onAddBranch }: DetailsSectionProps)
             <Select<ShippingBillFormValues>
               label="Discharge port"
               name="dischargePort"
-              options={portOptions}
+              options={options?.dischargePorts ?? []}
               placeholder="Defaults to destination"
             />
             <Select<ShippingBillFormValues>
               label="Origin state"
               name="originStateCode"
-              options={stateOptions}
+              options={options?.states ?? []}
               placeholder="Defaults to Branch State Code"
             />
             <div></div>
             <Select<ShippingBillFormValues>
               label="NFEI category"
               name="nfeiCategory"
-              options={nfeiCategoryOptions}
+              options={options?.nfeiCategories ?? []}
               placeholder="Not applicable"
             />
             <Input label="RBI waiver number" {...register('rbiWaiverNumber')} />
@@ -135,10 +135,18 @@ export function DetailsSection({ onQuickAdd, onAddBranch }: DetailsSectionProps)
         <div className="border-t border-gray-200 pt-5">
           <SectionHeading title="Package Detail" />
           <div className="grid gap-4 pb-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Select<ShippingBillFormValues> label="Nature of cargo" name="natureOfCargo" options={cargoOptions} />
+            <Select<ShippingBillFormValues>
+              label="Nature of cargo"
+              name="natureOfCargo"
+              options={options?.cargoTypes ?? []}
+            />
             <Input label="Gross weight" type="number" {...register('grossWeight')} />
             <Input label="Net weight" type="number" {...register('netWeight')} />
-            <Select<ShippingBillFormValues> label="Weight unit" name="measurementUnit" options={weightUnits} />
+            <Select<ShippingBillFormValues>
+              label="Weight unit"
+              name="measurementUnit"
+              options={options?.weightUnits ?? []}
+            />
             <Input label="Total packages" type="number" {...register('totalPackages')} />
             <Select<ShippingBillFormValues>
               label="Marks and numbers"
@@ -160,7 +168,7 @@ export function DetailsSection({ onQuickAdd, onAddBranch }: DetailsSectionProps)
               <Select<ShippingBillFormValues>
                 label="Seal type"
                 name="sealType"
-                options={sealTypes}
+                options={options?.sealTypes ?? []}
                 placeholder="Select if relevant"
               />
               {(!numberOfContainers || numberOfContainers.length === 0) && (

@@ -5,7 +5,8 @@ import { Button } from 'ui/basic/button'
 import { Input } from 'ui/inputs/input'
 import { Select } from 'ui/inputs/select'
 import { Dialog, DialogContent } from 'ui/interactive/dialog'
-import { Branch, countries } from '../model'
+import { useFormOptions } from '../hooks/use-form-options'
+import { Branch } from '../model'
 import { saveBranch } from '../store/demo-store'
 
 const branchSchema = s.object({
@@ -34,6 +35,7 @@ export interface BranchDialogProps {
 }
 
 export function BranchDialog({ kind, ownerId, branch, onClose, onSaved }: BranchDialogProps) {
+  const { options } = useFormOptions()
   const formCtx = useForm<BranchFields>(branchSchema, {
     defaultValues: branch ?? { branchName: '', address1: '', city: '', countryCode: kind === 'exporter' ? 'IN' : '' }
   })
@@ -62,7 +64,7 @@ export function BranchDialog({ kind, ownerId, branch, onClose, onSaved }: Branch
               <Select<BranchFields>
                 label="Country"
                 name="countryCode"
-                options={countries}
+                options={options?.countries ?? []}
                 placeholder="Select country"
               />
               <Input label="Email" type="email" {...register('email')} />

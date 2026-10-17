@@ -1,4 +1,3 @@
-import { contractTypes, paymentTypes, priceInclusionTypes } from '@/data/types'
 import { formatAmount, textOr } from '@/shared/format'
 import { useFieldArray } from 'core/form'
 import { Button } from 'ui/basic/button'
@@ -7,9 +6,10 @@ import { getFormContext } from 'ui/form'
 import { Checkbox } from 'ui/inputs/checkbox'
 import { Input } from 'ui/inputs/input'
 import { Select } from 'ui/inputs/select'
+import { useFormOptions } from '../hooks/use-form-options'
+import { inputDateType } from '../input-date-type'
 import type { BillInvoiceForm, ShippingBillFormValues } from '../model'
 import { emptyItem, invoiceTotal } from '../model'
-import { currencyOptions, inputDateType } from '../options'
 import { useDemoData } from '../store/demo-store'
 import { InvoiceCharges } from './invoice-charges'
 import { InvoiceItemEditor } from './invoice-item-editor'
@@ -27,6 +27,7 @@ interface InvoiceEditorProps {
 // One commercial invoice: header fields, charges, parties and its goods line items.
 export function InvoiceEditor({ index, invoice, canRemove, onRemove, onQuickAdd, onAddBranch }: InvoiceEditorProps) {
   const { register, control, watch } = getFormContext().hooks
+  const { options } = useFormOptions()
   const { businesses } = useDemoData()
   const invoiceValues = watch(`invoices.${index}`)
   const {
@@ -55,7 +56,7 @@ export function InvoiceEditor({ index, invoice, canRemove, onRemove, onQuickAdd,
             </h3>
             <p className="text-xs font-medium text-gray-800">
               {textOr(invoiceValues.currency, 'USD')} ·{' '}
-              {contractTypes.find((option) => option.value === invoiceValues.contractType)?.label ??
+              {(options?.contractTypes ?? []).find((option) => option.value === invoiceValues.contractType)?.label ??
                 textOr(invoiceValues.contractType, 'FOB')}
             </p>
           </div>
@@ -80,7 +81,7 @@ export function InvoiceEditor({ index, invoice, canRemove, onRemove, onQuickAdd,
               <Select<ShippingBillFormValues>
                 label="Currency"
                 name={`invoices.${index}.currency`}
-                options={currencyOptions}
+                options={options?.currencies ?? []}
                 rules={{ required: true }}
               />
             </div>
@@ -97,7 +98,7 @@ export function InvoiceEditor({ index, invoice, canRemove, onRemove, onQuickAdd,
           <Select<ShippingBillFormValues>
             label="Contract"
             name={`invoices.${index}.contractType`}
-            options={contractTypes}
+            options={options?.contractTypes ?? []}
             rules={{ required: true }}
           />
         </div>
@@ -125,14 +126,14 @@ export function InvoiceEditor({ index, invoice, canRemove, onRemove, onQuickAdd,
           <Select<ShippingBillFormValues>
             label="Price includes"
             name={`invoices.${index}.freightInsuranceIncluded`}
-            options={priceInclusionTypes}
+            options={options?.priceInclusionTypes ?? []}
             placeholder="Select if applicable"
           />
           <Input label="Contract / order number" {...register(`invoices.${index}.contractNumber`)} />
           <Select<ShippingBillFormValues>
             label="Payment type"
             name={`invoices.${index}.natureOfPayment`}
-            options={paymentTypes}
+            options={options?.paymentTypes ?? []}
             placeholder="Select if applicable"
           />
           <Input label="Payment period (days)" type="number" {...register(`invoices.${index}.periodOfPayment`)} />

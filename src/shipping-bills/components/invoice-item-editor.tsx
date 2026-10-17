@@ -1,15 +1,13 @@
-import { quantityCodes } from '@/data/quantity-code'
-import schemeCodes from '@/data/scheme-codes'
-import { Trades } from '@/data/trade-agreements'
 import { formatAmount } from '@/shared/format'
 import { Button } from 'ui/basic/button'
 import { getFormContext } from 'ui/form'
 import { Checkbox } from 'ui/inputs/checkbox'
 import { Input } from 'ui/inputs/input'
 import { Select } from 'ui/inputs/select'
+import { useFormOptions } from '../hooks/use-form-options'
+import { inputDateType } from '../input-date-type'
 import type { BillItemForm, ShippingBillFormValues } from '../model'
 import { lineTotal } from '../model'
-import { accessoryStatusOptions, igstPaymentOptions, inputDateType } from '../options'
 import { useDemoData } from '../store/demo-store'
 import { PartyFields } from './party-fields'
 import { Disclosure } from './ui/disclosure'
@@ -18,9 +16,12 @@ function itemBase(invoiceIndex: number, itemIndex: number) {
   return `invoices.${invoiceIndex}.items.${itemIndex}` as const
 }
 
-function schemeShowsDrawback(schemeCode?: string) {
-  const scheme = schemeCodes.find((entry) => entry.value === schemeCode)
-  return Boolean(scheme && (scheme.drawback || scheme.RODTEP || scheme.ROSCTL))
+function schemeShowsDrawback(
+  schemes: { value: string; drawback?: boolean; RODTEP?: boolean; ROSCTL?: boolean }[],
+  schemeCode?: string
+) {
+  const scheme = schemes.find((entry) => entry.value === schemeCode)
+  return Boolean(scheme && (scheme.drawback ?? scheme.RODTEP ?? scheme.ROSCTL))
 }
 
 interface InvoiceItemEditorProps {
@@ -46,6 +47,7 @@ export function InvoiceItemEditor({
   onAddBranch
 }: InvoiceItemEditorProps) {
   const { register } = getFormContext().hooks
+  const { options } = useFormOptions()
   const { businesses } = useDemoData()
   const basePath = itemBase(invoiceIndex, itemIndex)
 
@@ -76,7 +78,7 @@ export function InvoiceItemEditor({
         <Select<ShippingBillFormValues>
           label="Scheme code"
           name={`${basePath}.schemeCode`}
-          options={schemeCodes}
+          options={options?.schemeCodes ?? []}
           placeholder="Select scheme"
         />
         <Input
@@ -89,7 +91,7 @@ export function InvoiceItemEditor({
         <Select<ShippingBillFormValues>
           label="Unit"
           name={`${basePath}.unitOfMeasurement`}
-          options={quantityCodes}
+          options={options?.quantityCodes ?? []}
           rules={{ required: true }}
         />
         <Input
@@ -106,12 +108,12 @@ export function InvoiceItemEditor({
         <Select<ShippingBillFormValues>
           label="IGST payment"
           name={`${basePath}.igstPaymentStatus`}
-          options={igstPaymentOptions}
+          options={options?.igstPayments ?? []}
           placeholder="Select if applicable"
         />
       </div>
       <div className="mb-3 flex flex-wrap items-end gap-4">
-        {schemeShowsDrawback(item.schemeCode) && (
+        {schemeShowsDrawback(options?.schemeCodes ?? [], item.schemeCode) && (
           <>
             <div className="w-36">
               <Input label="Drawback Serial no." {...register(`${basePath}.drawbackSerialNumber`)} />
@@ -153,7 +155,7 @@ export function InvoiceItemEditor({
           <Select<ShippingBillFormValues>
             label="Unit of rate"
             name={`${basePath}.unitOfRate`}
-            options={quantityCodes}
+            options={options?.quantityCodes ?? []}
             placeholder={item.unitOfMeasurement}
           />
           <Input label="Per Unit (Rate)" type="number" placeholder="1" {...register(`${basePath}.numberOfUnits`)} />
@@ -167,7 +169,7 @@ export function InvoiceItemEditor({
           <Select<ShippingBillFormValues>
             label="Accessory status"
             name={`${basePath}.accessoryStatus`}
-            options={accessoryStatusOptions}
+            options={options?.accessoryStatuses ?? []}
             placeholder="Select if relevant"
           />
           {item.igstPaymentStatus === 'P' && (
@@ -180,7 +182,7 @@ export function InvoiceItemEditor({
           <Select<ShippingBillFormValues>
             label="Trade agreement code"
             name={`${basePath}.tradeAgreementsCode`}
-            options={Trades}
+            options={options?.tradeAgreements ?? []}
             placeholder="NCPTI"
           />
           <Input label="End use code" {...register(`${basePath}.endUseOfItem`)} />

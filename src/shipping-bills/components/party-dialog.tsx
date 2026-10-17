@@ -7,7 +7,8 @@ import { Input } from 'ui/inputs/input'
 import { Select } from 'ui/inputs/select'
 import { Textarea } from 'ui/inputs/text-area'
 import { Dialog, DialogContent } from 'ui/interactive/dialog'
-import { Business, countries, Exporter } from '../model'
+import { useFormOptions } from '../hooks/use-form-options'
+import { Business, Exporter } from '../model'
 import { saveBusiness, saveExporter } from '../store/demo-store'
 
 const partySchema = s.object({
@@ -44,6 +45,7 @@ export interface PartyDialogProps {
 
 export function PartyDialog({ kind, party, initialRole, onClose, onSaved }: PartyDialogProps) {
   const isNew = party == null
+  const { options } = useFormOptions()
   const formCtx = useForm<PartyFields>(partySchema, {
     defaultValues: {
       name: party?.name ?? '',
@@ -193,7 +195,7 @@ export function PartyDialog({ kind, party, initialRole, onClose, onSaved }: Part
                   <Select<PartyFields>
                     label="Country"
                     name="countryCode"
-                    options={countries}
+                    options={options?.countries ?? []}
                     placeholder="Select country"
                   />
                   <Input label="State / province" {...register('state')} />

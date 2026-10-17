@@ -4,14 +4,16 @@ import { Card, CardContent, CardHeader } from 'ui/basic/card'
 import { getFormContext } from 'ui/form'
 import { Input } from 'ui/inputs/input'
 import { Select } from 'ui/inputs/select'
+import { useFormOptions } from '../hooks/use-form-options'
+import { inputDateType } from '../input-date-type'
 import type { ShippingBillFormValues } from '../model'
-import { containerSealTypeOptions, containerSizeOptions, inputDateType } from '../options'
 import { Disclosure } from './ui/disclosure'
 import { SectionHeading } from './ui/section-heading'
 
 // Tab 3a: containerized cargo details and packing list ranges.
 export function CargoSection() {
   const { register, control } = getFormContext().hooks
+  const { options } = useFormOptions()
   const {
     fields: containers,
     append: addContainer,
@@ -50,7 +52,7 @@ export function CargoSection() {
                 <Select<ShippingBillFormValues>
                   label="Size"
                   name={`containers.${index}.containerSize`}
-                  options={containerSizeOptions}
+                  options={options?.containerSizes ?? []}
                   placeholder="Select size"
                 />
                 <Input label="Seal number" {...register(`containers.${index}.exciseSealNumber`)} />
@@ -58,7 +60,7 @@ export function CargoSection() {
                 <Select<ShippingBillFormValues>
                   label="Seal type"
                   name={`containers.${index}.sealType`}
-                  options={containerSealTypeOptions}
+                  options={options?.containerSealTypes ?? []}
                   placeholder="Select if needed"
                 />
                 <Input label="Seal device ID" {...register(`containers.${index}.sealDeviceId`)} />

@@ -1,40 +1,19 @@
-import { documentCodes } from '@/data/e-sanchit-codes'
 import { useFieldArray } from 'core/form'
 import { useState } from 'react'
 import { Button } from 'ui/basic/button'
 import { Card, CardContent, CardHeader } from 'ui/basic/card'
 import { getFormContext } from 'ui/form'
 import { Input } from 'ui/inputs/input'
+import { inputDateType } from '../input-date-type'
 import { emptyDocument, SupportingDocForm } from '../model'
-import { fileTypeOptions, inputDateType } from '../options'
+import {
+  getDocumentCodeLabel,
+  getFileTypeLabel,
+  searchDocumentCodes,
+  searchFileTypes
+} from '../services/form-options-service'
 import { AsyncSearchSelect } from './async-search-select'
 import { Disclosure } from './ui/disclosure'
-
-function searchDocumentCodes(query: string) {
-  const q = query.toLowerCase().trim()
-  return Promise.resolve(
-    documentCodes
-      .filter((doc) => doc.label.toLowerCase().includes(q) || doc.value.toLowerCase().includes(q))
-      .map((doc) => ({ value: doc.value, label: doc.label }))
-  )
-}
-
-function documentCodeLabel(value: string) {
-  const found = documentCodes.find((doc) => doc.value === value || doc.label === value)
-  return Promise.resolve(found ? found.label : value)
-}
-
-function searchFileTypes(query: string) {
-  const q = query.toLowerCase().trim()
-  return Promise.resolve(
-    fileTypeOptions.filter((option) => option.label.toLowerCase().includes(q) || option.value.toLowerCase().includes(q))
-  )
-}
-
-function fileTypeLabel(value: string) {
-  const found = fileTypeOptions.find((option) => option.value === value || option.label === value)
-  return Promise.resolve(found ? found.label : value)
-}
 
 interface DocumentRowProps {
   index: number
@@ -107,7 +86,7 @@ function DocumentRow({ index, onRemove }: DocumentRowProps) {
             name={`${basePath}.documentTypeCode`}
             placeholder="Search document type..."
             fetchOptions={searchDocumentCodes}
-            getInitialLabel={documentCodeLabel}
+            getInitialLabel={getDocumentCodeLabel}
           />
         </div>
         <Input label="Image reference number" {...register(`${basePath}.imageReferenceNumber`)} />
@@ -126,7 +105,7 @@ function DocumentRow({ index, onRemove }: DocumentRowProps) {
               placeholder="Search file type..."
               className="bg-transparent"
               fetchOptions={searchFileTypes}
-              getInitialLabel={fileTypeLabel}
+              getInitialLabel={getFileTypeLabel}
             />
           </div>
           <Input label="Place of issue" {...register(`${basePath}.placeOfIssue`)} />

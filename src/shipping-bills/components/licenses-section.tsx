@@ -4,12 +4,14 @@ import { Card, CardContent, CardHeader } from 'ui/basic/card'
 import { getFormContext } from 'ui/form'
 import { Input } from 'ui/inputs/input'
 import { Select } from 'ui/inputs/select'
+import { useFormOptions } from '../hooks/use-form-options'
+import { inputDateType } from '../input-date-type'
 import type { ShippingBillFormValues } from '../model'
-import { inputDateType, licenseSourceOptions } from '../options'
 
 // Tab 3c: scheme licences, only relevant for schemes that require one.
 export function LicensesSection() {
   const { register, control } = getFormContext().hooks
+  const { options } = useFormOptions()
   const { fields: licenses, append: addLicense, remove: removeLicense } = useFieldArray({ control, name: 'licenses' })
 
   return (
@@ -62,7 +64,7 @@ export function LicensesSection() {
               <Select<ShippingBillFormValues>
                 label="Goods source"
                 name={`licenses.${index}.indigenousOrImported`}
-                options={licenseSourceOptions}
+                options={options?.licenseSources ?? []}
                 placeholder="Select if needed"
               />
             </div>
