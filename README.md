@@ -1,6 +1,6 @@
 # Shipping Bill Creation Form
 
-An enterprise-grade export software frontend for creating, managing, and filing Customs & ICEGATE EDI Shipping Bills. Built on React 19, Tailwind CSS v4, React Hook Form, and Zustand with high-contrast accessibility across both dark and light modes.
+An export software frontend for creating, managing, and filing Customs & ICEGATE EDI Shipping Bills. Built on React 19, Tailwind CSS v4, React Hook Form, and Zustand with high-contrast accessibility across both dark and light modes.
 
 ## Tech Stack
 

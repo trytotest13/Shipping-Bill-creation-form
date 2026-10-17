@@ -43,11 +43,11 @@ function BillRow({
   downloadingId: number | null
   onDownloadFlatFile: (bill: SavedBill) => void
 }) {
-  const exporterName = textOr(bill.values.exporterName, '—')
-  const consigneeName = textOr(bill.values.consigneeName, '—')
+  const exporterName = textOr(bill.values.exporterName, '-')
+  const consigneeName = textOr(bill.values.consigneeName, '-')
   const total = bill.values.invoices.reduce((sum, invoice) => sum + invoiceTotal(invoice), 0)
   const updated =
-    bill.updated && !isNaN(new Date(bill.updated).getTime()) ? new Date(bill.updated).toLocaleDateString() : '—'
+    bill.updated && !isNaN(new Date(bill.updated).getTime()) ? new Date(bill.updated).toLocaleDateString() : '-'
 
   return (
     <tr className="border-b border-gray-200 hover:bg-gray-50/80 dark:border-gray-800 dark:hover:bg-gray-800/50">
@@ -60,7 +60,7 @@ function BillRow({
         <span className="block text-xs font-normal text-gray-800">to {consigneeName}</span>
       </td>
       <td className="font-medium text-gray-950">
-        {bill.values.loadingPort || '—'} → {bill.values.finalDestinationPort || '—'}
+        {bill.values.loadingPort || '-'} → {bill.values.finalDestinationPort || '-'}
       </td>
       <td className="font-semibold text-gray-950">
         {bill.values.invoices.length}

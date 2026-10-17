@@ -59,7 +59,7 @@ export function InvoiceItemEditor({
             {itemIndex + 1}
           </span>
           <h4 className="text-sm font-bold text-gray-950">
-            Item {itemIndex + 1} {item.goodsDescription1 ? `— ${item.goodsDescription1.slice(0, 30)}` : ''}
+            Item {itemIndex + 1} {item.goodsDescription1 ? `- ${item.goodsDescription1.slice(0, 30)}` : ''}
           </h4>
         </div>
         {canRemove && (

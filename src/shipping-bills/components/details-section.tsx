@@ -102,8 +102,8 @@ export function DetailsSection({ onQuickAdd, onAddBranch }: DetailsSectionProps)
             </div>
           </div>
           <p className="mt-3 text-xs text-gray-800">
-            Countries are derived from the port codes when saved: {portCountry(loadingPort) || '—'} →{' '}
-            {portCountry(finalDestinationPort) || '—'}.
+            Countries are derived from the port codes when saved: {portCountry(loadingPort) || '-'} →{' '}
+            {portCountry(finalDestinationPort) || '-'}.
           </p>
         </div>
         <Disclosure title="Regulatory and route exceptions">
