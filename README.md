@@ -82,7 +82,7 @@ Key rules: mock data and service logic never live in UI components; every async 
 
 ## AI Usage & Approach
 
-Tools: **ZCode** (agentic coding assistant) used as a pair-programming driver for the mechanical parts of this refactor.
+Tools: **codex and chatgpt** (agentic coding assistant) used as a pair-programming driver for the mechanical parts of this refactor.
 
 How it was used:
 
