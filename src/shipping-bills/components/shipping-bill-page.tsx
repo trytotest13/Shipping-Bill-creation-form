@@ -93,9 +93,9 @@ function BillEditor({ bill }: { bill?: SavedBill }) {
     <div className="space-y-6">
       <BillFormHeader bill={bill} />
       <WorkflowStepper />
-      <Form ctx={formCtx} handleSubmit={handleSave} className="space-y-6">
+      <Form ctx={formCtx} handleSubmit={handleSave} className="min-w-0 space-y-6">
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as BillTab)}>
-          <TabsList className="flex w-full justify-start gap-1 overflow-x-auto rounded-xl border border-gray-200 bg-gray-50 p-1.5">
+          <TabsList className="flex! w-full min-w-0 justify-start gap-1 overflow-x-auto rounded-xl border border-gray-200 bg-gray-50 p-1.5">
             <TabsTrigger value="details" className={tabTriggerClass}>
               1. Details
             </TabsTrigger>
